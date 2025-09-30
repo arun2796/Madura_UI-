@@ -20,6 +20,9 @@ import Teams from "./pages/masters/Teams";
 import UserManagement from "./pages/system/UserManagement";
 import RoleManagement from "./pages/system/RoleManagement";
 import SystemSettings from "./pages/system/SystemSettings";
+import ProductionStageFlow from "./pages/ProductionStageFlow";
+import ProductionStageDemo from "./pages/ProductionStageDemo";
+import ApiDiagnostics from "./pages/ApiDiagnostics";
 import { AuthProvider } from "./context/AuthContext";
 import { QueryProvider } from "./providers/QueryProvider";
 
@@ -53,6 +56,18 @@ function App() {
                       element={<BindingAdviceForm />}
                     />
                     <Route path="/job-cards" element={<JobCards />} />
+                    <Route
+                      path="/job-cards/:jobCardId/stages"
+                      element={<ProductionStageFlow />}
+                    />
+                    <Route
+                      path="/production-stage-demo"
+                      element={<ProductionStageDemo />}
+                    />
+                    <Route
+                      path="/api-diagnostics"
+                      element={<ApiDiagnostics />}
+                    />
                     <Route
                       path="/production-planning"
                       element={<ProductionPlanning />}

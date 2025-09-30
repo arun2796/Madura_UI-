@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Plus,
   Search,
@@ -8,6 +9,7 @@ import {
   CheckCircle,
   Clock,
   Trash2,
+  Workflow,
 } from "lucide-react";
 import {
   useJobCards,
@@ -18,6 +20,8 @@ import {
 import JobCardForm from "../components/forms/JobCardForm";
 
 const JobCards = () => {
+  const navigate = useNavigate();
+
   // Use React Query hooks for data operations
   const {
     data: jobCards = [],
@@ -180,9 +184,16 @@ const JobCards = () => {
                 </h3>
                 <div className="flex items-center space-x-2">
                   <button
+                    onClick={() => navigate(`/job-cards/${jobCard.id}/stages`)}
+                    className="text-indigo-600 hover:text-indigo-800"
+                    title="Manage Production Stages"
+                  >
+                    <Workflow className="h-4 w-4" />
+                  </button>
+                  <button
                     onClick={() => handleEdit(jobCard)}
                     className="text-blue-600 hover:text-blue-800"
-                    title="Edit Job Card"
+                    title="View Details"
                   >
                     <Eye className="h-4 w-4" />
                   </button>

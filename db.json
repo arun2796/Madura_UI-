@@ -62,137 +62,71 @@
           "amount": 22500
         }
       ]
+    },
+    {
+      "id": "7289",
+      "clientName": "ABC Private School",
+      "clientContact": "9876543210",
+      "clientEmail": "principal@abcschool.com",
+      "clientAddress": "123 Education Street, Chennai",
+      "notebookSize": "Mixed",
+      "pages": 96,
+      "quantity": 1100,
+      "reams": 53,
+      "sheets": 26400,
+      "ratePerNotebook": 15,
+      "totalAmount": 16500,
+      "status": "approved",
+      "createdDate": "2025-09-30",
+      "createdBy": "admin",
+      "approvedDate": "2025-09-30",
+      "notes": "",
+      "lineItems": [
+        {
+          "id": "item-1759239441957-1",
+          "description": "CROWN IV LINE RULED",
+          "quantity": 100,
+          "rate": 15,
+          "amount": 1500
+        },
+        {
+          "id": "item-1759239441957-2",
+          "description": "Imperial maths ruled",
+          "quantity": 1000,
+          "rate": 15,
+          "amount": 15000
+        }
+      ],
+      "specifications": {},
+      "createdAt": "2025-09-30T13:37:43.039Z",
+      "updatedAt": "2025-09-30T13:37:43.039Z"
     }
   ],
   "jobCards": [
     {
-      "id": "bc46",
-      "bindingAdviceId": "d17c",
-      "clientName": "Government School",
-      "notebookSize": "Mixed Products (2 items)",
-      "quantity": 2000,
-      "currentStage": "completed",
-      "progress": 100,
-      "startDate": "2025-09-30",
-      "estimatedCompletion": "2025-10-07",
-      "assignedTo": "Design Team",
-      "status": "active",
-      "createdAt": "2025-09-30T06:24:48.826Z",
-      "updatedAt": "2025-09-30T06:24:48.826Z",
-      "stages": [
-        {
-          "name": "designing",
-          "status": "completed",
-          "startDate": "2025-09-30",
-          "completedDate": "2025-09-30",
-          "assignedTo": "Design Team"
-        }
-      ],
-      "materials": [
-        {
-          "itemId": "MAT-d17c-1",
-          "itemName": "CROWN IV LINE RULED Paper",
-          "requiredQuantity": 10,
-          "allocatedQuantity": 10,
-          "consumedQuantity": 10,
-          "specifications": {
-            "description": "CROWN IV LINE RULED",
-            "quantity": 1000,
-            "rate": 15,
-            "amount": 15000,
-            "type": "paper"
-          }
-        },
-        {
-          "itemId": "MAT-d17c-2",
-          "itemName": "CROWN PLAIN NOTEBOOK Paper",
-          "requiredQuantity": 10,
-          "allocatedQuantity": 10,
-          "consumedQuantity": 10,
-          "specifications": {
-            "description": "CROWN PLAIN NOTEBOOK",
-            "quantity": 1000,
-            "rate": 15,
-            "amount": 15000,
-            "type": "paper"
-          }
-        }
-      ]
-    },
-    {
-      "bindingAdviceId": "d17c",
-      "clientName": "Government School",
-      "notebookSize": "Mixed Products (2 items)",
-      "quantity": 2000,
-      "currentStage": "completed",
-      "progress": 100,
-      "startDate": "2025-09-30",
-      "estimatedCompletion": "2025-10-07",
-      "assignedTo": "Production Team A",
-      "status": "active",
-      "createdAt": "2025-09-30T05:25:20.637Z",
-      "updatedAt": "2025-09-30T05:25:20.637Z",
-      "stages": [
-        {
-          "name": "designing",
-          "status": "completed",
-          "startDate": "2025-09-30",
-          "completedDate": "2025-09-30",
-          "assignedTo": "Production Team A"
-        }
-      ],
-      "materials": [
-        {
-          "itemId": "MAT-d17c-1",
-          "itemName": "CROWN IV LINE RULED Paper",
-          "requiredQuantity": 10,
-          "allocatedQuantity": 10,
-          "consumedQuantity": 10,
-          "specifications": {
-            "description": "CROWN IV LINE RULED",
-            "quantity": 1000,
-            "rate": 15,
-            "amount": 15000,
-            "type": "paper"
-          }
-        },
-        {
-          "itemId": "MAT-d17c-2",
-          "itemName": "CROWN PLAIN NOTEBOOK Paper",
-          "requiredQuantity": 10,
-          "allocatedQuantity": 10,
-          "consumedQuantity": 10,
-          "specifications": {
-            "description": "CROWN PLAIN NOTEBOOK",
-            "quantity": 1000,
-            "rate": 15,
-            "amount": 15000,
-            "type": "paper"
-          }
-        }
-      ],
-      "id": "35b3"
-    },
-    {
-      "id": "6a3e",
+      "id": "ca5c",
       "bindingAdviceId": "d252",
       "clientName": "SRM College",
       "notebookSize": "CROWN IV LINE RULED - 80 Pages",
-      "quantity": 1500,
-      "currentStage": "completed",
-      "progress": 100,
+      "quantity": 750,
+      "currentStage": "designing",
+      "progress": 0,
       "startDate": "2025-09-30",
       "estimatedCompletion": "2025-10-07",
       "assignedTo": "Production Team A",
       "status": "active",
-      "createdAt": "2025-09-30T06:25:17.359Z",
-      "updatedAt": "2025-09-30T06:25:17.359Z",
+      "createdAt": "2025-09-30T14:44:37.764Z",
+      "updatedAt": "2025-09-30T14:44:37.764Z",
+      "allocatedQuantity": 750,
+      "stageAllocatedQuantity": 0,
+      "remainingQuantity": 750,
+      "stageAllocations": [],
       "stages": [
         {
           "name": "designing",
-          "status": "completed",
+          "status": "in_progress",
           "startDate": "2025-09-30",
-          "completedDate": "2025-09-30",
+          "completedDate": null,
           "assignedTo": "Production Team A"
         }
       ],
@@ -202,7 +136,7 @@
           "itemName": "CROWN IV LINE RULED Paper",
           "requiredQuantity": 15,
           "allocatedQuantity": 15,
-          "consumedQuantity": 15,
+          "consumedQuantity": 0,
           "specifications": {
             "description": "CROWN IV LINE RULED",
             "quantity": 1500,
@@ -350,66 +284,96 @@
   ],
   "dispatches": [
     {
+      "id": "a693",
+      "jobCardId": null,
+      "clientName": "govind",
+      "deliveryLocation": "",
+      "deliveryAddress": "",
+      "quantity": 3,
+      "notebookSize": "Mixed Products (2 items)",
+      "scheduledDate": "2025-09-30",
+      "status": "delivered",
+      "transporter": "FastTrack Logistics",
+      "transporterContact": "9876543230",
+      "vehicleNumber": "1234",
+      "driverName": "govind",
+      "driverContact": "govind",
+      "estimatedDelivery": "2025-10-01",
+      "actualDelivery": "2025-09-30",
+      "totalCartons": 1,
+      "deliveryValue": 45,
+      "challanNumber": "CH-2025-780",
+      "notes": "",
       "multipleLocations": [
         {
           "locationId": "LOC-001",
-          "locationName": "ABC School - Main Campus",
-          "address": "456 Branch Road, Madurai - 625002",
-          "contactPerson": "Principal Sharma",
-          "contactNumber": "9876543211",
-          "quantity": 1000,
-          "cartons": 50,
-          "deliveryInstructions": "",
-          "deliveryTime": "10:00",
-          "status": "delivered"
-        },
-        {
-          "locationId": "LOC-002",
-          "locationName": "XYZ School - Main Campus",
-          "address": "456 Branch Road, Madurai - 625002",
-          "contactPerson": "Principal Kumar",
-          "contactNumber": "9876543210",
-          "quantity": 1000,
-          "cartons": 50,
-          "deliveryInstructions": "",
+          "locationName": "govind",
+          "address": "govind",
+          "contactPerson": "govind",
+          "contactNumber": "govind",
+          "quantity": 3,
+          "cartons": 1,
+          "deliveryInstructions": "govind",
           "deliveryTime": "10:00",
           "status": "delivered"
         }
       ],
-      "status": "delivered",
-      "actualDelivery": "2025-09-29",
-      "id": "02db"
+      "items": [
+        {
+          "itemId": "1",
+          "itemName": "Mixed Products (2 items)",
+          "quantity": 3
+        }
+      ],
+      "dispatchDate": "2025-09-30",
+      "createdAt": "2025-09-30T12:31:15.128Z",
+      "updatedAt": "2025-09-30T12:31:15.128Z"
     },
     {
+      "id": "44e0",
+      "jobCardId": null,
+      "clientName": "Arunkumar P",
+      "deliveryLocation": "",
+      "deliveryAddress": "",
+      "quantity": 9,
+      "notebookSize": "Mixed Products (2 items)",
+      "scheduledDate": "2025-09-30",
+      "status": "scheduled",
+      "transporter": "FastTrack Logistics",
+      "transporterContact": "9876543230",
+      "vehicleNumber": "qwerty45",
+      "driverName": "qwertyui",
+      "driverContact": "123456789",
+      "estimatedDelivery": "2025-10-01",
+      "actualDelivery": null,
+      "totalCartons": 1,
+      "deliveryValue": 135,
+      "challanNumber": "CH-2025-922",
+      "notes": "",
       "multipleLocations": [
         {
           "locationId": "LOC-001",
-          "locationName": "chennai",
-          "address": "chennai",
-          "contactPerson": "mohan",
-          "contactNumber": "123456780987",
-          "quantity": 1000,
-          "cartons": 50,
+          "locationName": "sdfghj",
+          "address": "asdfghj",
+          "contactPerson": "zxcvbn",
+          "contactNumber": "45678",
+          "quantity": 9,
+          "cartons": 1,
           "deliveryInstructions": "",
           "deliveryTime": "10:00",
-          "status": "delivered"
-        },
-        {
-          "locationId": "LOC-002",
-          "locationName": "madurai",
-          "address": "madurai",
-          "contactPerson": "deva",
-          "contactNumber": "1234567890",
-          "quantity": 1000,
-          "cartons": 50,
-          "deliveryInstructions": "",
-          "deliveryTime": "10:00",
-          "status": "delivered"
+          "status": "pending"
         }
       ],
-      "status": "delivered",
-      "actualDelivery": "2025-09-29",
-      "id": "3bc7"
+      "items": [
+        {
+          "itemId": "1",
+          "itemName": "Mixed Products (2 items)",
+          "quantity": 9
+        }
+      ],
+      "dispatchDate": "2025-09-30",
+      "createdAt": "2025-09-30T13:20:45.579Z",
+      "updatedAt": "2025-09-30T13:20:45.579Z"
     }
   ],
   "invoices": [
@@ -454,7 +418,7 @@
       "clientEmail": "contact@govschool.edu",
       "clientAddress": "123 Education Street, City",
       "bindingAdviceId": "d17c",
-      "jobCardId": "35b3",
+      "jobCardId": null,
       "amount": 30600,
       "taxAmount": 5508,
       "totalAmount": 36108,
@@ -492,21 +456,6 @@
   ],
   "clients": [
     {
-      "name": "Government School",
-      "type": "school",
-      "contactPerson": "HOD ",
-      "phone": "9876543212",
-      "email": "hod@gmail.com",
-      "address": "789 Government Complex, Theni",
-      "gstNumber": "",
-      "paymentTerms": "45 days",
-      "creditLimit": 25,
-      "status": "approved",
-      "approvedDate": "2024-01-15",
-      "approvedBy": "Admin User",
-      "id": "1a91"
-    },
-    {
       "id": "test123",
       "name": "ABC Private School",
       "type": "school",
@@ -531,7 +480,7 @@
       "address": "",
       "gstNumber": "",
       "paymentTerms": "30 days",
-      "creditLimit": 2000,
+      "creditLimit": 20000,
       "status": "approved"
     }
   ],
@@ -795,25 +744,5 @@
       "updatedAt": "2025-09-29T09:58:29.399Z"
     }
   ],
-  "productionPlans": [
-    {
-      "id": "PP-2024-002",
-      "planName": "February College Orders",
-      "startDate": "2024-02-01",
-      "endDate": "2024-02-10",
-      "status": "completed",
-      "priority": "medium",
-      "totalQuantity": 0,
-      "completedQuantity": 0,
-      "assignedTeam": "Production Team B",
-      "estimatedDuration": 9,
-      "jobCards": [],
-      "notes": "Multiple college orders batch production",
-      "createdDate": "2024-01-18",
-      "createdBy": "admin",
-      "bindingAdviceIds": [
-        "BA-2024-002"
-      ]
-    }
-  ]
+  "productionPlans": []
 }
