@@ -450,7 +450,10 @@ const BindingAdviceForm: React.FC<BindingAdviceFormProps> = ({
       lineItems: lineItems.map((item) => ({
         id: item.id,
         description: item.description,
+        pages: item.pages,
         quantity: item.quantity,
+        reams: item.reams,
+        sheets: item.sheets,
         rate: 15,
         amount: item.quantity * 15,
       })),

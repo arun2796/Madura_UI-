@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { X, Plus, Trash2, MapPin, Clock, User, Package } from "lucide-react";
+import {
+  X,
+  Plus,
+  Trash2,
+  MapPin,
+  Clock,
+  User,
+  Package,
+  Layers,
+} from "lucide-react";
 import { Dispatch } from "../../hooks/useData";
 import {
   useJobCards,
@@ -7,6 +16,8 @@ import {
   useUpdateDispatch,
   useUpdateJobCard,
 } from "../../hooks/useApiQueries";
+import { useProductionBatches } from "../../hooks/useBatchQueries";
+import { formatRange } from "../../utils/batchRangeValidation";
 
 interface DispatchFormProps {
   isOpen: boolean;
@@ -34,46 +45,58 @@ const DispatchForm: React.FC<DispatchFormProps> = ({
 }) => {
   // Use React Query hooks for API operations
   const { data: jobCards = [] } = useJobCards();
+  const { data: allBatches = [] } = useProductionBatches();
   const createDispatch = useCreateDispatch();
   const updateDispatch = useUpdateDispatch();
   const updateJobCard = useUpdateJobCard();
 
-  // Filter job cards that have fully completed products available for dispatch
-  const completedJobCards = jobCards.filter((jc) => {
-    // Check if all production stages are completed
-    const allStagesCompleted =
-      jc.stageAllocations?.every((stage) => stage.status === "completed") ||
-      false;
+  // Filter batches that are completed and have available quantity for dispatch
+  const completedBatches = allBatches.filter((batch) => {
+    // Check if batch is completed
+    const isCompleted = batch.completed && batch.status === "completed";
 
     // Check if there's available quantity for dispatch
-    const availableForDispatch = jc.availableForDispatch || 0;
-    const alreadyDispatched = jc.dispatchedQuantity || 0;
+    const availableForDispatch = batch.availableForDispatch || 0;
+    const alreadyDispatched = batch.dispatchedQuantity || 0;
     const hasAvailableQuantity = availableForDispatch > alreadyDispatched;
 
-    // Only show job cards with:
-    // 1. All stages completed
+    // Only show batches with:
+    // 1. Completed status
     // 2. Available quantity not yet dispatched
-    return allStagesCompleted && hasAvailableQuantity;
+    return isCompleted && hasAvailableQuantity;
   });
 
+  // Group batches by job card for display
+  const batchesByJobCard = completedBatches.reduce((acc, batch) => {
+    if (!acc[batch.jobCardId]) {
+      acc[batch.jobCardId] = [];
+    }
+    acc[batch.jobCardId].push(batch);
+    return acc;
+  }, {} as Record<string, typeof completedBatches>);
+
   // Debug logging
-  console.log("All job cards:", jobCards);
+  console.log("All batches:", allBatches);
+  console.log("Completed batches available for dispatch:", completedBatches);
+  console.log("Batches grouped by job card:", batchesByJobCard);
   console.log(
-    "Fully completed job cards available for dispatch:",
-    completedJobCards
-  );
-  console.log(
-    "Filtered details:",
-    completedJobCards.map((jc) => ({
-      id: jc.id,
-      availableForDispatch: jc.availableForDispatch,
-      dispatchedQuantity: jc.dispatchedQuantity,
-      remaining: (jc.availableForDispatch || 0) - (jc.dispatchedQuantity || 0),
+    "Batch details:",
+    completedBatches.map((batch) => ({
+      id: batch.id,
+      batchNumber: batch.batchNumber,
+      range: formatRange(batch.range),
+      availableForDispatch: batch.availableForDispatch,
+      dispatchedQuantity: batch.dispatchedQuantity,
+      remaining:
+        (batch.availableForDispatch || 0) - (batch.dispatchedQuantity || 0),
     }))
   );
 
   const [formData, setFormData] = useState({
     jobCardId: "",
+    batchId: "",
+    batchNumber: 0,
+    batchRange: "",
     clientName: "",
     deliveryLocation: "",
     deliveryAddress: "",
@@ -116,11 +139,19 @@ const DispatchForm: React.FC<DispatchFormProps> = ({
     { name: "Safe Transport", contact: "9876543238" },
   ];
 
+  // Get job cards that have completed batches available for dispatch
+  const completedJobCards = jobCards.filter((jc) => {
+    // Check if this job card has any completed batches
+    const jobCardBatches = batchesByJobCard[jc.id] || [];
+    return jobCardBatches.length > 0;
+  });
+
   // Get completed job cards that don't have dispatches yet
   const availableJobCards = completedJobCards.filter(
     (jc) => !editingDispatch || jc.id === editingDispatch.jobCardId
   );
 
+  console.log("Completed job cards:", completedJobCards);
   console.log("Available job cards for dispatch:", availableJobCards);
 
   useEffect(() => {
@@ -428,57 +459,121 @@ const DispatchForm: React.FC<DispatchFormProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Job Card Selection */}
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="font-medium text-blue-900 mb-3">
-              Job Card Information
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Job Card *
-                </label>
-                <select
-                  value={formData.jobCardId}
-                  onChange={(e) => handleJobCardSelect(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                >
-                  <option value="">Select Completed Job Card</option>
-                  {availableJobCards.map((jobCard) => (
-                    <option key={jobCard.id} value={jobCard.id}>
-                      {jobCard.id} - {jobCard.clientName} -{" "}
-                      {jobCard.notebookSize} (Qty:{" "}
-                      {(
-                        jobCard.producedQuantity ||
-                        jobCard.quantity ||
-                        0
-                      ).toLocaleString()}
-                      ) - Progress: {jobCard.progress}%
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Batch Selection */}
+          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+            <div className="flex items-center space-x-2 mb-3">
+              <Layers className="h-5 w-5 text-purple-600" />
+              <h3 className="font-medium text-purple-900">
+                Select Completed Batch for Dispatch
+              </h3>
+            </div>
 
-              {formData.jobCardId && (
-                <div className="bg-white p-3 rounded border">
-                  <div className="text-sm">
-                    <div>
-                      <span className="font-medium">Client:</span>{" "}
+            {completedBatches.length === 0 ? (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p className="text-sm text-yellow-800">
+                  No completed batches available for dispatch. Complete
+                  production batches first.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {Object.entries(batchesByJobCard).map(
+                  ([jobCardId, batches]) => {
+                    const jobCard = jobCards.find((jc) => jc.id === jobCardId);
+                    return (
+                      <div
+                        key={jobCardId}
+                        className="bg-white rounded-lg border border-purple-200 p-4"
+                      >
+                        <h4 className="font-semibold text-gray-900 mb-2">
+                          Job Card: {jobCardId} - {jobCard?.clientName}
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                          {batches.map((batch) => {
+                            const availableQty =
+                              (batch.availableForDispatch || 0) -
+                              (batch.dispatchedQuantity || 0);
+                            return (
+                              <button
+                                key={batch.id}
+                                type="button"
+                                onClick={() => {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    jobCardId: batch.jobCardId,
+                                    batchId: batch.id,
+                                    batchNumber: batch.batchNumber,
+                                    batchRange: formatRange(batch.range),
+                                    clientName: jobCard?.clientName || "",
+                                    notebookSize: batch.productName,
+                                    quantity: availableQty,
+                                    totalCartons: Math.ceil(availableQty / 20),
+                                    deliveryValue: availableQty * 15,
+                                  }));
+                                }}
+                                className={`p-3 rounded-lg border-2 text-left transition-all ${
+                                  formData.batchId === batch.id
+                                    ? "border-purple-600 bg-purple-100"
+                                    : "border-purple-200 bg-white hover:border-purple-400"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="font-semibold text-purple-900">
+                                    Batch #{batch.batchNumber}
+                                  </span>
+                                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">
+                                    Completed
+                                  </span>
+                                </div>
+                                <div className="text-sm text-gray-700">
+                                  <p>Range: {formatRange(batch.range)}</p>
+                                  <p>Available: {availableQty} units</p>
+                                  <p className="text-xs text-gray-500">
+                                    {batch.productName}
+                                  </p>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  }
+                )}
+              </div>
+            )}
+
+            {formData.batchId && (
+              <div className="mt-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg p-4">
+                <h4 className="font-semibold mb-2">Selected Batch Details</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="opacity-90">Batch Number:</span>
+                    <span className="ml-2 font-semibold">
+                      #{formData.batchNumber}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="opacity-90">Range:</span>
+                    <span className="ml-2 font-semibold">
+                      {formData.batchRange}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="opacity-90">Client:</span>
+                    <span className="ml-2 font-semibold">
                       {formData.clientName}
-                    </div>
-                    <div>
-                      <span className="font-medium">Product:</span>{" "}
-                      {formData.notebookSize}
-                    </div>
-                    <div>
-                      <span className="font-medium">Quantity:</span>{" "}
-                      {formData.quantity.toLocaleString()}
-                    </div>
+                    </span>
+                  </div>
+                  <div>
+                    <span className="opacity-90">Quantity:</span>
+                    <span className="ml-2 font-semibold">
+                      {formData.quantity} units
+                    </span>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Transport Details */}

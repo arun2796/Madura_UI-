@@ -30,9 +30,15 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
   const createInvoiceMutation = useCreateInvoice();
   const updateInvoiceMutation = useUpdateInvoice();
 
+  // Invoice mode state
+  const [invoiceMode, setInvoiceMode] = useState<
+    "binding_advice" | "jobcard_complete" | "dispatch_based"
+  >("jobcard_complete");
+
   const [formData, setFormData] = useState({
     dispatchId: "",
     bindingAdviceId: "",
+    jobCardId: "",
     clientName: "",
     clientContact: "",
     clientEmail: "",
@@ -339,9 +345,15 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     console.log("💰 Totals:", totals);
 
     const invoiceData = {
-      clientId: formData.bindingAdviceId || formData.dispatchId,
-      dispatchId: formData.dispatchId,
-      bindingAdviceId: formData.bindingAdviceId,
+      type: invoiceMode,
+      clientId:
+        formData.bindingAdviceId || formData.jobCardId || formData.dispatchId,
+      dispatchId:
+        invoiceMode === "dispatch_based" ? formData.dispatchId : undefined,
+      bindingAdviceId:
+        invoiceMode === "binding_advice" ? formData.bindingAdviceId : undefined,
+      jobCardId:
+        invoiceMode === "jobcard_complete" ? formData.jobCardId : undefined,
       clientName: formData.clientName,
       clientContact: formData.clientContact,
       clientEmail: formData.clientEmail,
@@ -426,6 +438,108 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Invoice Mode Selector */}
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
+            <label className="block text-sm font-medium text-gray-900 mb-3">
+              <FileText className="inline h-5 w-5 mr-2 text-indigo-600" />
+              Select Invoice Generation Mode *
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label
+                className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                  invoiceMode === "binding_advice"
+                    ? "border-indigo-600 bg-indigo-100 shadow-md"
+                    : "border-gray-300 bg-white hover:border-indigo-400"
+                }`}
+              >
+                <input
+                  type="radio"
+                  value="binding_advice"
+                  checked={invoiceMode === "binding_advice"}
+                  onChange={(e) =>
+                    setInvoiceMode(
+                      e.target.value as
+                        | "binding_advice"
+                        | "jobcard_complete"
+                        | "dispatch_based"
+                    )
+                  }
+                  className="mr-3 h-4 w-4 text-indigo-600"
+                />
+                <div>
+                  <div className="font-semibold text-gray-900">
+                    From Binding Advice
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    Generate from approved binding advice
+                  </div>
+                </div>
+              </label>
+
+              <label
+                className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                  invoiceMode === "jobcard_complete"
+                    ? "border-indigo-600 bg-indigo-100 shadow-md"
+                    : "border-gray-300 bg-white hover:border-indigo-400"
+                }`}
+              >
+                <input
+                  type="radio"
+                  value="jobcard_complete"
+                  checked={invoiceMode === "jobcard_complete"}
+                  onChange={(e) =>
+                    setInvoiceMode(
+                      e.target.value as
+                        | "binding_advice"
+                        | "jobcard_complete"
+                        | "dispatch_based"
+                    )
+                  }
+                  className="mr-3 h-4 w-4 text-indigo-600"
+                />
+                <div>
+                  <div className="font-semibold text-gray-900">
+                    From Job Card
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    Generate from completed job card
+                  </div>
+                </div>
+              </label>
+
+              <label
+                className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                  invoiceMode === "dispatch_based"
+                    ? "border-indigo-600 bg-indigo-100 shadow-md"
+                    : "border-gray-300 bg-white hover:border-indigo-400"
+                }`}
+              >
+                <input
+                  type="radio"
+                  value="dispatch_based"
+                  checked={invoiceMode === "dispatch_based"}
+                  onChange={(e) =>
+                    setInvoiceMode(
+                      e.target.value as
+                        | "binding_advice"
+                        | "jobcard_complete"
+                        | "dispatch_based"
+                    )
+                  }
+                  className="mr-3 h-4 w-4 text-indigo-600"
+                />
+                <div>
+                  <div className="font-semibold text-gray-900">
+                    From Dispatch
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    Generate from delivered dispatch
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
           {/* Invoice Header */}
           <div className="bg-blue-50 p-4 rounded-lg">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -480,148 +594,117 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
             </div>
           </div>
 
-          {/* Quick Test Button */}
-          <div className="bg-orange-50 p-4 rounded-lg">
-            <button
-              type="button"
-              onClick={() => {
-                console.log("🧪 Quick test button clicked");
-                // Set minimal test data
-                setFormData((prev) => ({
-                  ...prev,
-                  clientName: "Quick Test Client",
-                  clientContact: "1234567890",
-                  clientEmail: "test@example.com",
-                  clientAddress: "Test Address",
-                  bindingAdviceId: "test-ba-001",
-                  invoiceDate: new Date().toISOString().split("T")[0],
-                  dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-                    .toISOString()
-                    .split("T")[0],
-                  notes: "Quick test invoice",
-                }));
+          {/* Conditional Source Selection Based on Mode */}
+          {invoiceMode === "binding_advice" && (
+            <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                <FileText className="inline h-4 w-4 mr-1" />
+                Select Approved Binding Advice *
+              </label>
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    generateInvoiceFromBindingAdvice(e.target.value);
+                  }
+                }}
+                className="w-full px-3 py-2 border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                required
+              >
+                <option value="">Select Approved Binding Advice</option>
+                {bindingAdvicesQuery
+                  .filter((ba: any) => ba.status === "approved")
+                  .map((advice: any) => (
+                    <option key={advice.id} value={advice.id}>
+                      {advice.id} - {advice.clientName} - {advice.notebookSize}
+                      (Qty: {(advice.quantity || 0).toLocaleString()}) - ₹
+                      {(advice.totalAmount || 0).toLocaleString()}
+                    </option>
+                  ))}
+              </select>
+              <p className="text-xs text-indigo-700 mt-2">
+                Generate invoice from approved binding advice with all line
+                items
+              </p>
+            </div>
+          )}
 
-                // Set test invoice items
-                setInvoiceItems([
-                  {
-                    id: "1",
-                    description: "Test Item 1",
-                    quantity: 10,
-                    rate: 100,
-                    amount: 1000,
-                  },
-                  {
-                    id: "2",
-                    description: "Test Item 2",
-                    quantity: 5,
-                    rate: 200,
-                    amount: 1000,
-                  },
-                ]);
+          {invoiceMode === "jobcard_complete" && (
+            <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                <FileText className="inline h-4 w-4 mr-1" />
+                Select Completed Job Card *
+              </label>
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    console.log("🎯 Job card selected:", e.target.value);
+                    generateInvoiceFromJobCard(e.target.value);
+                    setFormData((prev) => ({
+                      ...prev,
+                      jobCardId: e.target.value,
+                    }));
+                  }
+                }}
+                className="w-full px-3 py-2 border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                required
+              >
+                <option value="">Select Completed Job Card</option>
+                {jobCardsQuery
+                  .filter(
+                    (jc: any) =>
+                      jc.currentStage === "completed" || jc.progress === 100
+                  )
+                  .map((jobCard: any) => (
+                    <option key={jobCard.id} value={jobCard.id}>
+                      {jobCard.id} - {jobCard.clientName} -{" "}
+                      {jobCard.notebookSize}
+                      (Qty:{" "}
+                      {(
+                        jobCard.producedQuantity ||
+                        jobCard.quantity ||
+                        0
+                      ).toLocaleString()}
+                      )
+                    </option>
+                  ))}
+              </select>
+              <p className="text-xs text-indigo-700 mt-2">
+                Generate invoice from completed job card with production details
+              </p>
+            </div>
+          )}
 
-                console.log("✅ Test data populated");
-              }}
-              className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center space-x-2"
-            >
-              <FileText className="h-4 w-4" />
-              <span>Quick Test - Populate Form</span>
-            </button>
-            <p className="text-xs text-orange-700 mt-2">
-              Click to populate the form with test data for quick testing
-            </p>
-          </div>
-
-          {/* Job Card Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <FileText className="inline h-4 w-4 mr-1" />
-              Generate Invoice from Completed Job Card
-            </label>
-            <select
-              onChange={(e) => {
-                if (e.target.value) {
-                  console.log("🎯 Job card selected:", e.target.value);
-                  generateInvoiceFromJobCard(e.target.value);
-                }
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Select Completed Job Card</option>
-              {jobCardsQuery
-                .filter(
-                  (jc: any) =>
-                    jc.currentStage === "completed" || jc.progress === 100
-                )
-                .map((jobCard: any) => (
-                  <option key={jobCard.id} value={jobCard.id}>
-                    {jobCard.id} - {jobCard.clientName} - {jobCard.notebookSize}
-                    (Qty:{" "}
-                    {(
-                      jobCard.producedQuantity ||
-                      jobCard.quantity ||
-                      0
-                    ).toLocaleString()}
-                    )
+          {invoiceMode === "dispatch_based" && (
+            <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                <FileText className="inline h-4 w-4 mr-1" />
+                Select Delivered Dispatch *
+              </label>
+              <select
+                value={formData.dispatchId}
+                onChange={(e) => handleDispatchSelect(e.target.value)}
+                className="w-full px-3 py-2 border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                disabled={!!sourceDispatch}
+                required
+              >
+                <option value="">Select Delivered Dispatch</option>
+                {availableDispatches.map((dispatch) => (
+                  <option key={dispatch.id} value={dispatch.id}>
+                    {dispatch.id} - {dispatch.clientName} (₹
+                    {(dispatch as any).deliveryValue?.toLocaleString() || "0"})
                   </option>
                 ))}
-            </select>
-            <p className="text-xs text-gray-500 mt-1">
-              Select a completed job card to auto-generate invoice with client
-              data and calculations
-            </p>
-          </div>
-
-          {/* Binding Advice Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Or Generate from Binding Advice
-            </label>
-            <select
-              onChange={(e) => {
-                if (e.target.value) {
-                  generateInvoiceFromBindingAdvice(e.target.value);
-                }
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Select Approved Binding Advice</option>
-              {bindingAdvicesQuery
-                .filter((ba: any) => ba.status === "approved")
-                .map((advice: any) => (
-                  <option key={advice.id} value={advice.id}>
-                    {advice.id} - {advice.clientName} - {advice.notebookSize}
-                    (Qty: {(advice.quantity || 0).toLocaleString()}) - ₹
-                    {(advice.totalAmount || 0).toLocaleString()}
-                  </option>
-                ))}
-            </select>
-          </div>
-
-          <div className="border-t border-gray-200 my-6"></div>
-
-          {/* Dispatch Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Or Select Delivered Dispatch
-            </label>
-            <select
-              value={formData.dispatchId}
-              onChange={(e) => handleDispatchSelect(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              disabled={!!sourceDispatch}
-            >
-              <option value="">Select Delivered Dispatch</option>
-              {availableDispatches.map((dispatch) => (
-                <option key={dispatch.id} value={dispatch.id}>
-                  {dispatch.id} - {dispatch.clientName} (₹
-                  {(dispatch as any).deliveryValue?.toLocaleString() || "0"})
-                </option>
-              ))}
-            </select>
-          </div>
+              </select>
+              <p className="text-xs text-indigo-700 mt-2">
+                Generate invoice from delivered dispatch with delivery details
+              </p>
+            </div>
+          )}
 
           {/* Client Information */}
-          {formData.dispatchId && (
+          {(formData.dispatchId ||
+            formData.bindingAdviceId ||
+            formData.jobCardId) && (
             <div className="bg-green-50 p-4 rounded-lg">
               <h3 className="font-medium text-green-900 mb-3">Bill To:</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

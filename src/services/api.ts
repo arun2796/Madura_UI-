@@ -284,6 +284,20 @@ export interface JobCard {
       quantity: number;
     }>;
   }>;
+
+  // Batch tracking
+  batches?: Array<{
+    id: string;
+    batchNumber: number;
+    originalQuantity: number;
+    currentStage: string;
+    status: "active" | "completed" | "cancelled";
+    completedQuantity: number;
+    dispatchedQuantity: number;
+    availableForDispatch: number;
+    createdAt: string;
+    completedAt: string | null;
+  }>;
 }
 
 export interface InventoryItem {
@@ -319,6 +333,14 @@ export interface Client {
   phone: string;
   address: string;
   status: "active" | "inactive" | "pending" | "approved" | "rejected";
+  // Product availability tracking for this client
+  products?: Array<{
+    productId: string;
+    productName: string;
+    availableQuantity: number; // Available for new job cards
+    reservedQuantity: number; // Reserved in active job cards
+    totalOrdered: number; // Total ever ordered
+  }>;
   createdAt: string;
   updatedAt: string;
   approvedDate?: string | null;
@@ -444,6 +466,12 @@ export interface Invoice {
   id: string;
   clientId: string;
   clientName: string;
+  // Invoice type determines the source of data
+  type: "binding_advice" | "jobcard_complete" | "dispatch_based";
+  // Reference IDs based on type
+  bindingAdviceId?: string;
+  jobCardId?: string;
+  dispatchId?: string;
   items: Array<{
     itemId: string;
     itemName: string;
@@ -453,7 +481,9 @@ export interface Invoice {
   }>;
   totalAmount: number;
   status: string;
+  paid: boolean;
   dueDate: string;
+  issuedAt: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -503,4 +533,87 @@ export interface ProductionPlan {
 
 export const productionPlanService = new ApiService<ProductionPlan>(
   "productionPlans"
+);
+
+// Production Batch interface with range-based tracking
+export interface ProductionBatch {
+  id: string;
+  jobCardId: string;
+  batchNumber: number;
+  // Range-based tracking (e.g., units 1-500, 501-1000)
+  range: {
+    from: number;
+    to: number;
+  };
+  quantity: number; // Calculated: to - from + 1
+  productId: string;
+  productName: string;
+  currentStage:
+    | "design"
+    | "procurement"
+    | "printing"
+    | "cutting_binding"
+    | "gathering_binding"
+    | "quality"
+    | "packing"
+    | "completed";
+  currentStageIndex: number;
+  status: "active" | "completed" | "cancelled";
+  // Stage assignments with team and timestamps
+  stageAssignments: {
+    design?: {
+      teamId: string;
+      teamName: string;
+      startedAt: string;
+      completedAt: string | null;
+    };
+    procurement?: {
+      teamId: string;
+      teamName: string;
+      startedAt: string;
+      completedAt: string | null;
+    };
+    printing?: {
+      teamId: string;
+      teamName: string;
+      startedAt: string;
+      completedAt: string | null;
+    };
+    cutting_binding?: {
+      teamId: string;
+      teamName: string;
+      startedAt: string;
+      completedAt: string | null;
+    };
+    gathering_binding?: {
+      teamId: string;
+      teamName: string;
+      startedAt: string;
+      completedAt: string | null;
+    };
+    quality?: {
+      teamId: string;
+      teamName: string;
+      startedAt: string;
+      completedAt: string | null;
+    };
+    packing?: {
+      teamId: string;
+      teamName: string;
+      startedAt: string;
+      completedAt: string | null;
+    };
+  };
+  completed: boolean;
+  dispatchedQuantity: number;
+  availableForDispatch: number;
+  notes?: string;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  completedAt: string | null;
+}
+
+export const productionBatchService = new ApiService<ProductionBatch>(
+  "productionBatches"
 );

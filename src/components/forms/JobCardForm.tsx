@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { X, Calendar, Users, Package } from "lucide-react";
+import {
+  X,
+  Calendar,
+  Users,
+  Package,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import {
   useBindingAdvices,
   useCreateJobCard,
   useUpdateJobCard,
   useJobCards,
+  useClients,
+  useClient,
+  useUpdateClient,
 } from "../../hooks/useApiQueries";
 import { JobCard } from "../../services/api";
 import QuantitySelector from "../QuantitySelector";
@@ -23,8 +33,10 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
 }) => {
   const { data: bindingAdvices = [] } = useBindingAdvices();
   const { data: allJobCards = [] } = useJobCards();
+  const { data: clients = [] } = useClients();
   const createJobCardMutation = useCreateJobCard();
   const updateJobCardMutation = useUpdateJobCard();
+  const updateClientMutation = useUpdateClient();
 
   const [formData, setFormData] = useState({
     bindingAdviceId: "",
@@ -39,9 +51,11 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
   const [selectedQuantity, setSelectedQuantity] = useState<number>(0);
   const [availableQuantity, setAvailableQuantity] = useState<number>(0);
   const [selectedBindingAdvice, setSelectedBindingAdvice] = useState<any>(null);
+  const [selectedClient, setSelectedClient] = useState<any>(null);
   const [productQuantities, setProductQuantities] = useState<
     Record<string, number>
   >({});
+  const [availabilityError, setAvailabilityError] = useState<string>("");
 
   const productionTeams = [
     "Production Team A",
@@ -142,6 +156,10 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
       // Store selected binding advice
       setSelectedBindingAdvice(selectedAdvice);
 
+      // Find client by name
+      const client = clients.find((c) => c.name === selectedAdvice.clientName);
+      setSelectedClient(client);
+
       // Initialize product quantities to 0
       const initialQuantities: Record<string, number> = {};
       selectedAdvice.lineItems?.forEach((item) => {
@@ -151,6 +169,7 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
 
       setAvailableQuantity(remainingQuantity);
       setSelectedQuantity(0);
+      setAvailabilityError("");
 
       console.log("Binding Advice Selected:", {
         id: selectedAdvice.id,
@@ -158,6 +177,7 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
         allocatedToJobCards,
         remainingQuantity,
         lineItems: selectedAdvice.lineItems,
+        client,
       });
     }
   };
@@ -241,9 +261,68 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
         }
       );
     } else {
+      // Validate client availability before creating job card
+      if (selectedClient && selectedClient.products) {
+        let hasAvailabilityIssue = false;
+
+        selectedBindingAdvice?.lineItems?.forEach((item: any) => {
+          const clientProduct = selectedClient.products.find(
+            (p: any) => p.productName === item.description
+          );
+          const requestedQty = productQuantities[item.id] || 0;
+
+          if (clientProduct && requestedQty > clientProduct.availableQuantity) {
+            hasAvailabilityIssue = true;
+            setAvailabilityError(
+              `Insufficient availability for ${item.description}. Available: ${clientProduct.availableQuantity}, Requested: ${requestedQty}`
+            );
+          }
+        });
+
+        if (hasAvailabilityIssue) {
+          alert(
+            "Cannot create job card: Insufficient client product availability"
+          );
+          return;
+        }
+      }
+
       // Create new job card using React Query mutation
       createJobCardMutation.mutate(jobCardData, {
-        onSuccess: () => {
+        onSuccess: async (newJobCard) => {
+          // Update client availability
+          if (selectedClient && selectedClient.products) {
+            const updatedProducts = selectedClient.products.map((p: any) => {
+              const lineItem = selectedBindingAdvice?.lineItems?.find(
+                (item: any) => item.description === p.productName
+              );
+
+              if (lineItem) {
+                const allocatedQty = productQuantities[lineItem.id] || 0;
+                return {
+                  ...p,
+                  availableQuantity: p.availableQuantity - allocatedQty,
+                  reservedQuantity: p.reservedQuantity + allocatedQty,
+                };
+              }
+              return p;
+            });
+
+            // Update client with new availability
+            try {
+              await updateClientMutation.mutateAsync({
+                id: selectedClient.id,
+                data: {
+                  ...selectedClient,
+                  products: updatedProducts,
+                },
+              });
+              console.log("Client availability updated successfully");
+            } catch (error) {
+              console.error("Failed to update client availability:", error);
+            }
+          }
+
           onClose();
         },
         onError: (error) => {
@@ -332,8 +411,17 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
                         // Calculate available quantity for this product
                         const productTotalQty = item.quantity || 0;
 
+                        // Find client product availability
+                        const clientProduct = selectedClient?.products?.find(
+                          (p: any) => p.productName === item.description
+                        );
+                        const clientAvailable =
+                          clientProduct?.availableQuantity || 0;
+                        const clientReserved =
+                          clientProduct?.reservedQuantity || 0;
+                        const clientTotal = clientProduct?.totalOrdered || 0;
+
                         // Calculate already allocated to other job cards for this product
-                        // (In a real scenario, you'd track this per product)
                         const productAvailable = productTotalQty;
 
                         return (
@@ -345,12 +433,50 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
                               <h4 className="font-semibold text-gray-900">
                                 Product {index + 1}: {item.description}
                               </h4>
-                              <div className="text-sm text-gray-600 mt-1">
-                                <span className="font-medium">
-                                  Total Available:
-                                </span>{" "}
-                                {productAvailable} units
+                              <div className="grid grid-cols-2 gap-2 text-sm mt-2">
+                                <div className="text-gray-600">
+                                  <span className="font-medium">
+                                    Binding Advice:
+                                  </span>{" "}
+                                  {productAvailable} units
+                                </div>
+                                {clientProduct && (
+                                  <>
+                                    <div className="text-green-600">
+                                      <span className="font-medium flex items-center">
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Client Available:
+                                      </span>{" "}
+                                      {clientAvailable} units
+                                    </div>
+                                    <div className="text-orange-600">
+                                      <span className="font-medium">
+                                        Reserved:
+                                      </span>{" "}
+                                      {clientReserved} units
+                                    </div>
+                                    <div className="text-blue-600">
+                                      <span className="font-medium">
+                                        Total Ordered:
+                                      </span>{" "}
+                                      {clientTotal} units
+                                    </div>
+                                  </>
+                                )}
                               </div>
+                              {clientProduct &&
+                                clientAvailable < productQuantities[item.id] &&
+                                productQuantities[item.id] > 0 && (
+                                  <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded flex items-start">
+                                    <AlertCircle className="h-4 w-4 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+                                    <p className="text-sm text-red-700">
+                                      Warning: Selected quantity (
+                                      {productQuantities[item.id]}) exceeds
+                                      client available quantity (
+                                      {clientAvailable})
+                                    </p>
+                                  </div>
+                                )}
                             </div>
 
                             <QuantitySelector
