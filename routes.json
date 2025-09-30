@@ -1,0 +1,15 @@
+{
+  "/api/binding-advices": "/bindingAdvices",
+  "/api/job-cards": "/jobCards",
+  "/api/inventory": "/inventory",
+  "/api/dispatches": "/dispatches",
+  "/api/invoices": "/invoices",
+  "/api/clients": "/clients",
+  "/api/paper-sizes": "/paperSizes",
+  "/api/notebook-types": "/notebookTypes",
+  "/api/calculation-rules": "/calculationRules",
+  "/api/teams": "/teams",
+  "/api/users": "/users",
+  "/api/roles": "/roles",
+  "/api/system-settings": "/systemSettings"
+}

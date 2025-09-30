@@ -1,0 +1,8 @@
+{
+  "port": 3001,
+  "watch": true,
+  "routes": "routes.json",
+  "middlewares": ["json-server-middleware.js"],
+  "delay": 200,
+  "id": "id"
+}

@@ -1,0 +1,819 @@
+{
+  "bindingAdvices": [
+    {
+      "id": "d17c",
+      "clientName": "Government School",
+      "clientContact": "9876543210",
+      "clientEmail": "contact@govschool.edu",
+      "clientAddress": "123 Education Street, City",
+      "notebookSize": "A4 Crown",
+      "pages": 96,
+      "quantity": 2000,
+      "reams": 10,
+      "sheets": 5000,
+      "ratePerNotebook": 15,
+      "totalAmount": 30000,
+      "status": "approved",
+      "createdDate": "2025-09-25",
+      "createdBy": "admin",
+      "approvedDate": "2025-09-29",
+      "notes": "Bulk order for government school",
+      "lineItems": [
+        {
+          "id": "1",
+          "description": "CROWN IV LINE RULED",
+          "quantity": 1000,
+          "rate": 15,
+          "amount": 15000
+        },
+        {
+          "id": "2",
+          "description": "CROWN PLAIN NOTEBOOK",
+          "quantity": 1000,
+          "rate": 15,
+          "amount": 15000
+        }
+      ]
+    },
+    {
+      "id": "d252",
+      "clientName": "SRM College",
+      "clientContact": "9876543211",
+      "clientEmail": "contact@srmcollege.edu",
+      "clientAddress": "456 College Road, City",
+      "notebookSize": "A4 Crown",
+      "pages": 80,
+      "quantity": 1500,
+      "reams": 8,
+      "sheets": 4000,
+      "ratePerNotebook": 15,
+      "totalAmount": 22500,
+      "status": "approved",
+      "createdDate": "2025-09-28",
+      "createdBy": "admin",
+      "approvedDate": "2025-09-30",
+      "notes": "College bulk order",
+      "lineItems": [
+        {
+          "id": "1",
+          "description": "CROWN IV LINE RULED",
+          "quantity": 1500,
+          "rate": 15,
+          "amount": 22500
+        }
+      ]
+    }
+  ],
+  "jobCards": [
+    {
+      "id": "bc46",
+      "bindingAdviceId": "d17c",
+      "clientName": "Government School",
+      "notebookSize": "Mixed Products (2 items)",
+      "quantity": 2000,
+      "currentStage": "completed",
+      "progress": 100,
+      "startDate": "2025-09-30",
+      "estimatedCompletion": "2025-10-07",
+      "assignedTo": "Design Team",
+      "status": "active",
+      "createdAt": "2025-09-30T06:24:48.826Z",
+      "updatedAt": "2025-09-30T06:24:48.826Z",
+      "stages": [
+        {
+          "name": "designing",
+          "status": "completed",
+          "startDate": "2025-09-30",
+          "completedDate": "2025-09-30",
+          "assignedTo": "Design Team"
+        }
+      ],
+      "materials": [
+        {
+          "itemId": "MAT-d17c-1",
+          "itemName": "CROWN IV LINE RULED Paper",
+          "requiredQuantity": 10,
+          "allocatedQuantity": 10,
+          "consumedQuantity": 10,
+          "specifications": {
+            "description": "CROWN IV LINE RULED",
+            "quantity": 1000,
+            "rate": 15,
+            "amount": 15000,
+            "type": "paper"
+          }
+        },
+        {
+          "itemId": "MAT-d17c-2",
+          "itemName": "CROWN PLAIN NOTEBOOK Paper",
+          "requiredQuantity": 10,
+          "allocatedQuantity": 10,
+          "consumedQuantity": 10,
+          "specifications": {
+            "description": "CROWN PLAIN NOTEBOOK",
+            "quantity": 1000,
+            "rate": 15,
+            "amount": 15000,
+            "type": "paper"
+          }
+        }
+      ]
+    },
+    {
+      "bindingAdviceId": "d17c",
+      "clientName": "Government School",
+      "notebookSize": "Mixed Products (2 items)",
+      "quantity": 2000,
+      "currentStage": "completed",
+      "progress": 100,
+      "startDate": "2025-09-30",
+      "estimatedCompletion": "2025-10-07",
+      "assignedTo": "Production Team A",
+      "status": "active",
+      "createdAt": "2025-09-30T05:25:20.637Z",
+      "updatedAt": "2025-09-30T05:25:20.637Z",
+      "stages": [
+        {
+          "name": "designing",
+          "status": "completed",
+          "startDate": "2025-09-30",
+          "completedDate": "2025-09-30",
+          "assignedTo": "Production Team A"
+        }
+      ],
+      "materials": [
+        {
+          "itemId": "MAT-d17c-1",
+          "itemName": "CROWN IV LINE RULED Paper",
+          "requiredQuantity": 10,
+          "allocatedQuantity": 10,
+          "consumedQuantity": 10,
+          "specifications": {
+            "description": "CROWN IV LINE RULED",
+            "quantity": 1000,
+            "rate": 15,
+            "amount": 15000,
+            "type": "paper"
+          }
+        },
+        {
+          "itemId": "MAT-d17c-2",
+          "itemName": "CROWN PLAIN NOTEBOOK Paper",
+          "requiredQuantity": 10,
+          "allocatedQuantity": 10,
+          "consumedQuantity": 10,
+          "specifications": {
+            "description": "CROWN PLAIN NOTEBOOK",
+            "quantity": 1000,
+            "rate": 15,
+            "amount": 15000,
+            "type": "paper"
+          }
+        }
+      ],
+      "id": "35b3"
+    },
+    {
+      "id": "6a3e",
+      "bindingAdviceId": "d252",
+      "clientName": "SRM College",
+      "notebookSize": "CROWN IV LINE RULED - 80 Pages",
+      "quantity": 1500,
+      "currentStage": "completed",
+      "progress": 100,
+      "startDate": "2025-09-30",
+      "estimatedCompletion": "2025-10-07",
+      "assignedTo": "Production Team A",
+      "status": "active",
+      "createdAt": "2025-09-30T06:25:17.359Z",
+      "updatedAt": "2025-09-30T06:25:17.359Z",
+      "stages": [
+        {
+          "name": "designing",
+          "status": "completed",
+          "startDate": "2025-09-30",
+          "completedDate": "2025-09-30",
+          "assignedTo": "Production Team A"
+        }
+      ],
+      "materials": [
+        {
+          "itemId": "MAT-d252-1",
+          "itemName": "CROWN IV LINE RULED Paper",
+          "requiredQuantity": 15,
+          "allocatedQuantity": 15,
+          "consumedQuantity": 15,
+          "specifications": {
+            "description": "CROWN IV LINE RULED",
+            "quantity": 1500,
+            "rate": 15,
+            "amount": 22500,
+            "type": "paper"
+          }
+        }
+      ]
+    }
+  ],
+  "inventory": [
+    {
+      "itemName": "A4 Paper Reams",
+      "category": "raw_material",
+      "subcategory": "paper",
+      "currentStock": 250,
+      "unit": "reams",
+      "minStock": 50,
+      "maxStock": 500,
+      "specifications": {
+        "size": "A4",
+        "weight": "70 GSM",
+        "color": "White",
+        "brand": "JK Copier"
+      },
+      "reelNumber": "R-2024-001",
+      "weight": "2.5 kg",
+      "supplier": "Paper Mills Ltd",
+      "supplierContact": "9876543220",
+      "costPerUnit": 115,
+      "lastUpdated": "2025-09-29",
+      "status": "optimal",
+      "location": "Warehouse A",
+      "purchaseHistory": [
+        {
+          "date": "2025-09-29",
+          "quantity": 250,
+          "rate": 110,
+          "supplier": "Paper Mills Ltd"
+        }
+      ],
+      "id": "d202"
+    },
+    {
+      "id": "c709",
+      "itemName": "A4 Notebooks - 96 Pages",
+      "category": "finished_product",
+      "subcategory": "notebook",
+      "currentStock": 2500,
+      "unit": "pieces",
+      "minStock": 500,
+      "maxStock": 5000,
+      "specifications": {
+        "size": "A4",
+        "pages": 96,
+        "ruling": "Single Line",
+        "binding": "Spiral",
+        "cover": "Hard Cover",
+        "paperWeight": "70 GSM",
+        "color": "White"
+      },
+      "productionCost": 40,
+      "sellingPrice": 65,
+      "lastProduced": "2025-09-29",
+      "status": "optimal",
+      "location": "Finished Goods Warehouse",
+      "createdAt": "2025-09-29T17:07:17.525Z",
+      "updatedAt": "2025-09-29T17:07:17.525Z",
+      "productionHistory": [
+        {
+          "date": "2025-09-29",
+          "quantity": 2500,
+          "jobCardId": "INITIAL-STOCK",
+          "productionCost": 40
+        }
+      ]
+    },
+    {
+      "itemName": "B5 paper sheet",
+      "category": "raw_material",
+      "subcategory": "paper",
+      "currentStock": 14800,
+      "unit": "reams",
+      "minStock": 5000,
+      "maxStock": 25500,
+      "specifications": {
+        "size": "B5",
+        "weight": "70gsm",
+        "color": "White",
+        "brand": "century"
+      },
+      "reelNumber": "R -2025-1002",
+      "weight": "1.5 kg",
+      "supplier": "paper mill ",
+      "supplierContact": "12345678909",
+      "costPerUnit": 3,
+      "lastUpdated": "2025-09-30",
+      "status": "optimal",
+      "location": "Warehouse A",
+      "purchaseHistory": [
+        {
+          "date": "2025-09-29",
+          "quantity": 14800,
+          "rate": 3,
+          "supplier": "paper mill "
+        }
+      ],
+      "id": "981e"
+    },
+    {
+      "id": "8cd0",
+      "itemName": "B5 note book ",
+      "category": "finished_product",
+      "subcategory": "notebook",
+      "currentStock": 800,
+      "unit": "pieces",
+      "minStock": 200,
+      "maxStock": 5000,
+      "specifications": {
+        "size": "B5",
+        "pages": 96,
+        "ruling": "Single Line",
+        "binding": "Spiral",
+        "cover": "Hard Cover",
+        "paperWeight": "70 GSM",
+        "color": "White"
+      },
+      "productionCost": 70,
+      "sellingPrice": 90,
+      "lastProduced": "2025-09-29",
+      "status": "optimal",
+      "location": "Finished Goods Warehouse",
+      "createdAt": "2025-09-29T19:12:59.474Z",
+      "updatedAt": "2025-09-29T19:12:59.474Z",
+      "productionHistory": [
+        {
+          "date": "2025-09-29",
+          "quantity": 800,
+          "jobCardId": "INITIAL-STOCK",
+          "productionCost": 70
+        }
+      ]
+    }
+  ],
+  "dispatches": [
+    {
+      "multipleLocations": [
+        {
+          "locationId": "LOC-001",
+          "locationName": "ABC School - Main Campus",
+          "address": "456 Branch Road, Madurai - 625002",
+          "contactPerson": "Principal Sharma",
+          "contactNumber": "9876543211",
+          "quantity": 1000,
+          "cartons": 50,
+          "deliveryInstructions": "",
+          "deliveryTime": "10:00",
+          "status": "delivered"
+        },
+        {
+          "locationId": "LOC-002",
+          "locationName": "XYZ School - Main Campus",
+          "address": "456 Branch Road, Madurai - 625002",
+          "contactPerson": "Principal Kumar",
+          "contactNumber": "9876543210",
+          "quantity": 1000,
+          "cartons": 50,
+          "deliveryInstructions": "",
+          "deliveryTime": "10:00",
+          "status": "delivered"
+        }
+      ],
+      "status": "delivered",
+      "actualDelivery": "2025-09-29",
+      "id": "02db"
+    },
+    {
+      "multipleLocations": [
+        {
+          "locationId": "LOC-001",
+          "locationName": "chennai",
+          "address": "chennai",
+          "contactPerson": "mohan",
+          "contactNumber": "123456780987",
+          "quantity": 1000,
+          "cartons": 50,
+          "deliveryInstructions": "",
+          "deliveryTime": "10:00",
+          "status": "delivered"
+        },
+        {
+          "locationId": "LOC-002",
+          "locationName": "madurai",
+          "address": "madurai",
+          "contactPerson": "deva",
+          "contactNumber": "1234567890",
+          "quantity": 1000,
+          "cartons": 50,
+          "deliveryInstructions": "",
+          "deliveryTime": "10:00",
+          "status": "delivered"
+        }
+      ],
+      "status": "delivered",
+      "actualDelivery": "2025-09-29",
+      "id": "3bc7"
+    }
+  ],
+  "invoices": [
+    {
+      "status": "paid",
+      "paymentDate": "2025-09-30",
+      "paymentMethod": "Bank Transfer",
+      "paymentReference": "1234567",
+      "id": "ddb4"
+    },
+    {
+      "status": "paid",
+      "paymentDate": "2025-09-30",
+      "paymentMethod": "Bank Transfer",
+      "paymentReference": "1235",
+      "id": "b31e"
+    },
+    {
+      "status": "paid",
+      "paymentDate": "2025-09-29",
+      "paymentMethod": "Bank Transfer",
+      "paymentReference": "qwrt12345",
+      "id": "9b18"
+    },
+    {
+      "status": "paid",
+      "paymentDate": "2025-09-29",
+      "paymentMethod": "Bank Transfer",
+      "id": "0582"
+    },
+    {
+      "status": "paid",
+      "paymentDate": "2025-09-30",
+      "paymentMethod": "Bank Transfer",
+      "paymentReference": "123456789",
+      "id": "348f"
+    },
+    {
+      "id": "efa5",
+      "clientName": "Government School",
+      "clientContact": "9876543210",
+      "clientEmail": "contact@govschool.edu",
+      "clientAddress": "123 Education Street, City",
+      "bindingAdviceId": "d17c",
+      "jobCardId": "35b3",
+      "amount": 30600,
+      "taxAmount": 5508,
+      "totalAmount": 36108,
+      "invoiceDate": "2025-09-30",
+      "dueDate": "2025-10-30",
+      "status": "sent",
+      "items": [
+        {
+          "id": "ITEM-1",
+          "description": "CROWN IV LINE RULED - 96 Pages",
+          "quantity": 1000,
+          "rate": 15,
+          "amount": 15000
+        },
+        {
+          "id": "ITEM-2",
+          "description": "CROWN PLAIN NOTEBOOK - 96 Pages",
+          "quantity": 1000,
+          "rate": 15,
+          "amount": 15000
+        },
+        {
+          "id": "ITEM-3",
+          "description": "Production Completion Bonus (2%)",
+          "quantity": 1,
+          "rate": 600,
+          "amount": 600
+        }
+      ],
+      "notes": "Invoice generated from Job Card 35b3 - Production completed with 2000 units produced. Generated on 9/30/2025.",
+      "paymentTerms": "Net 30 days",
+      "createdAt": "2025-09-30T05:32:41.879Z",
+      "updatedAt": "2025-09-30T05:32:41.879Z"
+    }
+  ],
+  "clients": [
+    {
+      "name": "Government School",
+      "type": "school",
+      "contactPerson": "HOD ",
+      "phone": "9876543212",
+      "email": "hod@gmail.com",
+      "address": "789 Government Complex, Theni",
+      "gstNumber": "",
+      "paymentTerms": "45 days",
+      "creditLimit": 25,
+      "status": "approved",
+      "approvedDate": "2024-01-15",
+      "approvedBy": "Admin User",
+      "id": "1a91"
+    },
+    {
+      "id": "test123",
+      "name": "ABC Private School",
+      "type": "school",
+      "contactPerson": "Principal Smith",
+      "phone": "9876543210",
+      "email": "principal@abcschool.com",
+      "address": "123 Education Street, Chennai",
+      "gstNumber": "33ABCDE1234F1Z5",
+      "paymentTerms": "30 days",
+      "creditLimit": 50000,
+      "status": "approved",
+      "approvedDate": "2024-02-20",
+      "approvedBy": "Manager"
+    },
+    {
+      "id": "ca71",
+      "name": "SRM college",
+      "type": "school",
+      "contactPerson": "mohan",
+      "phone": "1234567890",
+      "email": "mohan@gmail.com",
+      "address": "",
+      "gstNumber": "",
+      "paymentTerms": "30 days",
+      "creditLimit": 2000,
+      "status": "approved"
+    }
+  ],
+  "paperSizes": [
+    {
+      "id": "1aae",
+      "name": "Crown 49 x 74",
+      "dimensions": "49 x 74",
+      "type": "standard",
+      "sheetsPerReem": 500,
+      "active": true,
+      "description": "CROWN IV LINE RULED"
+    },
+    {
+      "id": "96c6",
+      "name": "imperial I 64 x76",
+      "dimensions": "64 x 79",
+      "type": "custom",
+      "sheetsPerReem": 500,
+      "active": true,
+      "description": ""
+    }
+  ],
+  "notebookTypes": [
+    {
+      "id": "NT-001",
+      "name": "Standard Notebook",
+      "category": "academic",
+      "paperSize": "A4 Crown",
+      "pages": 200,
+      "pagesPerSheet": 4,
+      "steps": "8",
+      "active": true,
+      "createdDate": "2024-01-01"
+    },
+    {
+      "id": "33fd",
+      "name": "CROWN IV LINE RULED",
+      "category": "notebook",
+      "pages": 96,
+      "paperSize": "Crown 49 x 74",
+      "pagesPerSheet": 24,
+      "steps": "12",
+      "active": true,
+      "description": ""
+    },
+    {
+      "id": "e4c7",
+      "name": "Imperial maths ruled",
+      "category": "notebook",
+      "pages": 96,
+      "paperSize": "imperial I 64 x76",
+      "pagesPerSheet": 24,
+      "steps": "12",
+      "active": true,
+      "description": ""
+    }
+  ],
+  "calculationRules": [
+    {
+      "id": "CR-001",
+      "name": "Standard Notebook Calculation",
+      "type": "notebook",
+      "formula": {
+        "totalSheets": "Math.ceil((pages * quantity) / pagesPerSheet)",
+        "totalReams": "Math.ceil(totalSheets / sheetsPerReem)"
+      },
+      "variables": {
+        "defaultPagesPerSheet": 4,
+        "sheetsPerReem": 500
+      },
+      "active": true,
+      "createdDate": "2024-01-01"
+    },
+    {
+      "id": "8270",
+      "name": "Crown Size Calculation",
+      "description": "33fd - 96 pages, 1000 quantity",
+      "variables": {
+        "pages": 96,
+        "quantity": 1000,
+        "paperSize": "1aae",
+        "notebookType": "33fd",
+        "customPagesPerSheet": 24,
+        "customSheetsPerReem": 500
+      },
+      "formula": {
+        "totalSheets": "4000",
+        "totalReams": "8",
+        "totalPages": "96000",
+        "steps": "4"
+      },
+      "result": {
+        "sheets": 4000,
+        "reams": 8,
+        "pages": 96000,
+        "paperSize": "Unknown",
+        "steps": 4
+      },
+      "metadata": {
+        "paperSize": "1aae",
+        "notebookType": "33fd",
+        "calculationDate": "2025-09-29T17:10:40.131Z",
+        "calculationTimestamp": 1759165840131,
+        "formattedDate": "9/29/2025",
+        "version": "2.0"
+      },
+      "createdDate": "2025-09-29",
+      "createdAt": "2025-09-29T17:10:40.131Z",
+      "updatedAt": "2025-09-29T17:10:40.131Z",
+      "timestamp": 1759165840131,
+      "createdBy": "admin",
+      "status": "active",
+      "type": "notebook_calculation",
+      "active": true
+    }
+  ],
+  "teams": [],
+  "users": [
+    {
+      "id": "USR-001",
+      "username": "admin",
+      "email": "admin@madurapapers.com",
+      "firstName": "System",
+      "lastName": "Administrator",
+      "role": "admin",
+      "department": "IT",
+      "phone": "9876543000",
+      "status": "active",
+      "createdDate": "2024-01-01",
+      "lastLogin": "2024-01-15T10:30:00Z",
+      "permissions": [
+        "all"
+      ]
+    },
+    {
+      "id": "USR-002",
+      "username": "quotation_staff",
+      "email": "quotation@madurapapers.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "role": "Quotation Staff",
+      "department": "Sales",
+      "phone": "9876543001",
+      "status": "active",
+      "createdDate": "2024-01-01",
+      "lastLogin": "2024-01-15T09:30:00Z",
+      "permissions": [
+        "quotations.create",
+        "quotations.read",
+        "quotations.update"
+      ]
+    }
+  ],
+  "roles": [
+    {
+      "id": "ROLE-001",
+      "name": "Administrator",
+      "description": "Full system access",
+      "permissions": [
+        "users.create",
+        "users.read",
+        "users.update",
+        "users.delete",
+        "inventory.create",
+        "inventory.read",
+        "inventory.update",
+        "inventory.delete",
+        "orders.create",
+        "orders.read",
+        "orders.update",
+        "orders.delete",
+        "reports.read",
+        "settings.update"
+      ],
+      "active": true,
+      "createdDate": "2024-01-01"
+    }
+  ],
+  "systemSettings": [
+    {
+      "value": "Madura Papers",
+      "updatedBy": "admin",
+      "updatedDate": "2025-09-29",
+      "id": "SET-001"
+    },
+    {
+      "value": "Madura Papers",
+      "updatedBy": "admin",
+      "updatedDate": "2025-09-29",
+      "id": "2421"
+    },
+    {
+      "value": "Madura Papers",
+      "updatedBy": "admin",
+      "updatedDate": "2025-09-29",
+      "id": "55f6"
+    },
+    {
+      "value": "Madura ERP ",
+      "updatedBy": "admin",
+      "updatedDate": "2025-09-29",
+      "id": "6fbc"
+    },
+    {
+      "value": "true",
+      "updatedBy": "admin",
+      "updatedDate": "2025-09-29",
+      "id": "546e"
+    },
+    {
+      "value": "true",
+      "updatedBy": "admin",
+      "updatedDate": "2025-09-29",
+      "id": "96a3"
+    },
+    {
+      "value": "true",
+      "updatedBy": "admin",
+      "updatedDate": "2025-09-29",
+      "id": "06c3"
+    },
+    {
+      "id": "e7a5",
+      "category": "company",
+      "key": "company_name",
+      "value": "Madura Papers Pvt",
+      "description": "company_name setting",
+      "type": "string",
+      "updatedBy": "admin",
+      "updatedDate": "2025-09-29"
+    },
+    {
+      "id": "3b75",
+      "category": "company",
+      "key": "company_phone",
+      "value": "1234567890",
+      "description": "company_phone setting",
+      "type": "string",
+      "updatedBy": "admin",
+      "updatedDate": "2025-09-29"
+    },
+    {
+      "id": "975c",
+      "category": "company",
+      "key": "company_email",
+      "value": "madura@gmail.com",
+      "description": "company_email setting",
+      "type": "string",
+      "updatedBy": "admin",
+      "updatedDate": "2025-09-29"
+    },
+    {
+      "id": "911b",
+      "key": "demo_setting",
+      "value": "demo_value",
+      "type": "string",
+      "description": "Demo system setting",
+      "status": "active",
+      "createdAt": "2025-09-29T09:58:29.399Z",
+      "updatedAt": "2025-09-29T09:58:29.399Z"
+    }
+  ],
+  "productionPlans": [
+    {
+      "id": "PP-2024-002",
+      "planName": "February College Orders",
+      "startDate": "2024-02-01",
+      "endDate": "2024-02-10",
+      "status": "completed",
+      "priority": "medium",
+      "totalQuantity": 0,
+      "completedQuantity": 0,
+      "assignedTeam": "Production Team B",
+      "estimatedDuration": 9,
+      "jobCards": [],
+      "notes": "Multiple college orders batch production",
+      "createdDate": "2024-01-18",
+      "createdBy": "admin",
+      "bindingAdviceIds": [
+        "BA-2024-002"
+      ]
+    }
+  ]
+}
