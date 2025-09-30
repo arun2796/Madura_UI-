@@ -5,6 +5,7 @@ import {
   useJobCards,
   useCreateDispatch,
   useUpdateDispatch,
+  useUpdateJobCard,
 } from "../../hooks/useApiQueries";
 
 interface DispatchFormProps {
@@ -35,22 +36,41 @@ const DispatchForm: React.FC<DispatchFormProps> = ({
   const { data: jobCards = [] } = useJobCards();
   const createDispatch = useCreateDispatch();
   const updateDispatch = useUpdateDispatch();
+  const updateJobCard = useUpdateJobCard();
 
-  // Filter completed job cards that are ready for dispatch
+  // Filter job cards that have fully completed products available for dispatch
   const completedJobCards = jobCards.filter((jc) => {
-    // Check if job card is completed and has produced quantity
-    const isCompleted =
-      jc.currentStage === "completed" ||
-      jc.progress === 100 ||
-      jc.status === "completed";
-    const hasQuantity = (jc.producedQuantity || jc.quantity || 0) > 0;
+    // Check if all production stages are completed
+    const allStagesCompleted =
+      jc.stageAllocations?.every((stage) => stage.status === "completed") ||
+      false;
 
-    return isCompleted && hasQuantity;
+    // Check if there's available quantity for dispatch
+    const availableForDispatch = jc.availableForDispatch || 0;
+    const alreadyDispatched = jc.dispatchedQuantity || 0;
+    const hasAvailableQuantity = availableForDispatch > alreadyDispatched;
+
+    // Only show job cards with:
+    // 1. All stages completed
+    // 2. Available quantity not yet dispatched
+    return allStagesCompleted && hasAvailableQuantity;
   });
 
   // Debug logging
   console.log("All job cards:", jobCards);
-  console.log("Completed job cards:", completedJobCards);
+  console.log(
+    "Fully completed job cards available for dispatch:",
+    completedJobCards
+  );
+  console.log(
+    "Filtered details:",
+    completedJobCards.map((jc) => ({
+      id: jc.id,
+      availableForDispatch: jc.availableForDispatch,
+      dispatchedQuantity: jc.dispatchedQuantity,
+      remaining: (jc.availableForDispatch || 0) - (jc.dispatchedQuantity || 0),
+    }))
+  );
 
   const [formData, setFormData] = useState({
     jobCardId: "",
@@ -172,9 +192,10 @@ const DispatchForm: React.FC<DispatchFormProps> = ({
       const deliveryDate = new Date(estimatedDate);
       deliveryDate.setDate(estimatedDate.getDate() + 1);
 
-      // Use produced quantity if available, otherwise use original quantity
-      const actualQuantity =
-        selectedJobCard.producedQuantity || selectedJobCard.quantity;
+      // Use available for dispatch quantity (completed but not yet dispatched)
+      const availableQty = selectedJobCard.availableForDispatch || 0;
+      const alreadyDispatched = selectedJobCard.dispatchedQuantity || 0;
+      const actualQuantity = availableQty - alreadyDispatched;
 
       setFormData((prev) => ({
         ...prev,
@@ -190,11 +211,14 @@ const DispatchForm: React.FC<DispatchFormProps> = ({
       console.log("Job Card Selected for Dispatch:", {
         id: selectedJobCard.id,
         clientName: selectedJobCard.clientName,
-        originalQuantity: selectedJobCard.quantity,
-        producedQuantity: selectedJobCard.producedQuantity,
-        actualQuantity: actualQuantity,
-        currentStage: selectedJobCard.currentStage,
-        status: selectedJobCard.status,
+        totalQuantity: selectedJobCard.quantity,
+        completedQuantity: selectedJobCard.completedQuantity,
+        availableForDispatch: availableQty,
+        alreadyDispatched: alreadyDispatched,
+        remainingToDispatch: actualQuantity,
+        allStagesCompleted: selectedJobCard.stageAllocations?.every(
+          (s) => s.status === "completed"
+        ),
       });
     }
   };
@@ -340,7 +364,38 @@ const DispatchForm: React.FC<DispatchFormProps> = ({
       );
     } else {
       createDispatch.mutate(dispatchData, {
-        onSuccess: () => {
+        onSuccess: (newDispatch) => {
+          // Update job card with dispatch tracking
+          const selectedJobCard = jobCards.find(
+            (jc) => jc.id === formData.jobCardId
+          );
+          if (selectedJobCard) {
+            const currentDispatched = selectedJobCard.dispatchedQuantity || 0;
+            const newDispatchedTotal = currentDispatched + formData.quantity;
+            const availableForDispatch =
+              selectedJobCard.availableForDispatch || 0;
+            const newAvailableForDispatch =
+              availableForDispatch - formData.quantity;
+
+            // Add dispatch record to job card
+            const dispatches = selectedJobCard.dispatches || [];
+            dispatches.push({
+              dispatchId: newDispatch.id,
+              dispatchedQuantity: formData.quantity,
+              dispatchDate: formData.scheduledDate,
+            });
+
+            updateJobCard.mutate({
+              id: formData.jobCardId,
+              data: {
+                dispatchedQuantity: newDispatchedTotal,
+                availableForDispatch: Math.max(0, newAvailableForDispatch),
+                dispatches,
+                updatedAt: new Date().toISOString(),
+              },
+            });
+          }
+
           onClose();
           // Automatically reload the page to refresh data
           window.location.reload();

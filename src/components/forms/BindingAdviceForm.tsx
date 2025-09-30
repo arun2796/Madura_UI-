@@ -183,7 +183,7 @@ const BindingAdviceForm: React.FC<BindingAdviceFormProps> = ({
           notes: "Manufacturing process",
         },
         {
-          id: "quality",
+          id: "quality check",
           name: "Quality Check",
           status: "pending",
           assignedTo: "",

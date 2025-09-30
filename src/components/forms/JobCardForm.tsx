@@ -4,8 +4,11 @@ import {
   useBindingAdvices,
   useCreateJobCard,
   useUpdateJobCard,
+  useJobCards,
 } from "../../hooks/useApiQueries";
 import { JobCard } from "../../services/api";
+import QuantitySelector from "../QuantitySelector";
+import QuantityAllocationDisplay from "../QuantityAllocationDisplay";
 
 interface JobCardFormProps {
   isOpen: boolean;
@@ -19,6 +22,7 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
   editingJobCard,
 }) => {
   const { data: bindingAdvices = [] } = useBindingAdvices();
+  const { data: allJobCards = [] } = useJobCards();
   const createJobCardMutation = useCreateJobCard();
   const updateJobCardMutation = useUpdateJobCard();
 
@@ -27,23 +31,17 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
     clientName: "",
     notebookSize: "",
     quantity: 0,
-    currentStage: "designing",
-    progress: 0,
     startDate: new Date().toISOString().split("T")[0],
     estimatedCompletion: "",
     assignedTo: "Production Team A",
   });
 
-  const productionStages = [
-    { key: "designing", label: "Designing" },
-    { key: "procurement", label: "Procurement" },
-    { key: "printing", label: "Printing" },
-    { key: "cutting", label: "Cutting & Folding" },
-    { key: "binding", label: "Gathering & Binding" },
-    { key: "quality_check", label: "Quality Check" },
-    { key: "packing", label: "Packing" },
-    { key: "completed", label: "Completed" },
-  ];
+  const [selectedQuantity, setSelectedQuantity] = useState<number>(0);
+  const [availableQuantity, setAvailableQuantity] = useState<number>(0);
+  const [selectedBindingAdvice, setSelectedBindingAdvice] = useState<any>(null);
+  const [productQuantities, setProductQuantities] = useState<
+    Record<string, number>
+  >({});
 
   const productionTeams = [
     "Production Team A",
@@ -74,8 +72,6 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
         clientName: editingJobCard.clientName,
         notebookSize: editingJobCard.notebookSize,
         quantity: editingJobCard.quantity,
-        currentStage: editingJobCard.currentStage,
-        progress: editingJobCard.progress,
         startDate: editingJobCard.startDate,
         estimatedCompletion: editingJobCard.estimatedCompletion,
         assignedTo: editingJobCard.assignedTo,
@@ -87,8 +83,6 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
         clientName: "",
         notebookSize: "",
         quantity: 0,
-        currentStage: "designing",
-        progress: 0,
         startDate: new Date().toISOString().split("T")[0],
         estimatedCompletion: "",
         assignedTo: "Production Team A",
@@ -119,6 +113,17 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
           0
         ) || selectedAdvice.quantity;
 
+      // Calculate already allocated quantity to other job cards
+      const allocatedToJobCards = allJobCards
+        .filter(
+          (jc) =>
+            jc.bindingAdviceId === bindingAdviceId &&
+            jc.id !== editingJobCard?.id
+        )
+        .reduce((sum, jc) => sum + (jc.quantity || 0), 0);
+
+      const remainingQuantity = totalQuantity - allocatedToJobCards;
+
       // Create comprehensive notebook size description
       const notebookSizeDescription =
         selectedAdvice.lineItems && selectedAdvice.lineItems.length > 1
@@ -130,17 +135,29 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
         bindingAdviceId: selectedAdvice.id,
         clientName: selectedAdvice.clientName,
         notebookSize: notebookSizeDescription,
-        quantity: totalQuantity,
+        quantity: 0, // Will be calculated from product quantities
         estimatedCompletion: estimatedDate.toISOString().split("T")[0],
       }));
 
-      console.log("Binding Advice Mapped:", {
+      // Store selected binding advice
+      setSelectedBindingAdvice(selectedAdvice);
+
+      // Initialize product quantities to 0
+      const initialQuantities: Record<string, number> = {};
+      selectedAdvice.lineItems?.forEach((item) => {
+        initialQuantities[item.id] = 0;
+      });
+      setProductQuantities(initialQuantities);
+
+      setAvailableQuantity(remainingQuantity);
+      setSelectedQuantity(0);
+
+      console.log("Binding Advice Selected:", {
         id: selectedAdvice.id,
-        clientName: selectedAdvice.clientName,
-        notebookSize: notebookSizeDescription,
-        quantity: totalQuantity,
-        lineItems: selectedAdvice.lineItems?.length || 0,
-        originalData: selectedAdvice,
+        totalQuantity,
+        allocatedToJobCards,
+        remainingQuantity,
+        lineItems: selectedAdvice.lineItems,
       });
     }
   };
@@ -159,28 +176,25 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
       clientName: formData.clientName,
       notebookSize: formData.notebookSize,
       quantity: formData.quantity,
-      currentStage: formData.currentStage,
-      progress: formData.progress,
+      currentStage: "designing", // Always start at designing stage
+      progress: 0, // Always start at 0% - Production Stage Management controls this
       startDate: formData.startDate,
       estimatedCompletion: formData.estimatedCompletion,
       assignedTo: formData.assignedTo,
       status: "active" as const,
       createdAt: currentDate,
       updatedAt: currentDate,
+      // Quantity tracking
+      allocatedQuantity: formData.quantity,
+      stageAllocatedQuantity: 0,
+      remainingQuantity: formData.quantity,
+      stageAllocations: [],
       stages: [
         {
           name: "designing",
-          status:
-            formData.currentStage === "designing"
-              ? "in_progress"
-              : productionStages.findIndex(
-                  (s) => s.key === formData.currentStage
-                ) > 0
-              ? "completed"
-              : "pending",
+          status: "pending", // Will be set to in_progress when Production Stage Management starts
           startDate: formData.startDate,
-          completedDate:
-            formData.currentStage === "designing" ? null : formData.startDate,
+          completedDate: null,
           assignedTo: formData.assignedTo,
         },
       ],
@@ -189,9 +203,7 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
         itemName: `${lineItem.description} Paper`,
         requiredQuantity: Math.ceil(lineItem.quantity / 100),
         allocatedQuantity: Math.ceil(lineItem.quantity / 100),
-        consumedQuantity: Math.ceil(
-          (lineItem.quantity / 100) * (formData.progress / 100)
-        ),
+        consumedQuantity: 0, // Will be updated by Production Stage Management
         specifications: {
           description: lineItem.description,
           quantity: lineItem.quantity,
@@ -205,9 +217,7 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
           itemName: `${formData.notebookSize} Paper`,
           requiredQuantity: Math.ceil(formData.quantity / 100),
           allocatedQuantity: Math.ceil(formData.quantity / 100),
-          consumedQuantity: Math.ceil(
-            (formData.quantity / 100) * (formData.progress / 100)
-          ),
+          consumedQuantity: 0, // Will be updated by Production Stage Management
           specifications: {
             size: formData.notebookSize,
             type: "paper",
@@ -285,33 +295,140 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
 
           {/* Auto-loaded Information */}
           {formData.bindingAdviceId && (
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-medium text-blue-900 mb-2">
-                Binding Advice Details
-              </h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-blue-700 font-medium">Client:</span>
-                  <span className="ml-2 text-blue-800">
-                    {formData.clientName}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-blue-700 font-medium">
-                    Notebook Size:
-                  </span>
-                  <span className="ml-2 text-blue-800">
-                    {formData.notebookSize}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-blue-700 font-medium">Quantity:</span>
-                  <span className="ml-2 text-blue-800">
-                    {(formData.quantity || 0).toLocaleString()}
-                  </span>
+            <>
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h3 className="font-medium text-blue-900 mb-2">
+                  Binding Advice Details
+                </h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-blue-700 font-medium">Client:</span>
+                    <span className="ml-2 text-blue-800">
+                      {formData.clientName}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-blue-700 font-medium">
+                      Notebook Size:
+                    </span>
+                    <span className="ml-2 text-blue-800">
+                      {formData.notebookSize}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+
+              {/* Product-wise Quantity Allocation */}
+              <div className="border border-gray-200 rounded-lg p-4">
+                <h3 className="font-medium text-gray-900 mb-4">
+                  Select Quantity for Each Product
+                </h3>
+
+                {selectedBindingAdvice?.lineItems &&
+                selectedBindingAdvice.lineItems.length > 0 ? (
+                  <div className="space-y-4">
+                    {selectedBindingAdvice.lineItems.map(
+                      (item: any, index: number) => {
+                        // Calculate available quantity for this product
+                        const productTotalQty = item.quantity || 0;
+
+                        // Calculate already allocated to other job cards for this product
+                        // (In a real scenario, you'd track this per product)
+                        const productAvailable = productTotalQty;
+
+                        return (
+                          <div
+                            key={item.id}
+                            className="border border-blue-200 bg-blue-50 rounded-lg p-4"
+                          >
+                            <div className="mb-3">
+                              <h4 className="font-semibold text-gray-900">
+                                Product {index + 1}: {item.description}
+                              </h4>
+                              <div className="text-sm text-gray-600 mt-1">
+                                <span className="font-medium">
+                                  Total Available:
+                                </span>{" "}
+                                {productAvailable} units
+                              </div>
+                            </div>
+
+                            <QuantitySelector
+                              availableQuantity={productAvailable}
+                              onQuantitySelect={(qty) => {
+                                // Update product quantities
+                                const newQuantities = {
+                                  ...productQuantities,
+                                  [item.id]: qty,
+                                };
+                                setProductQuantities(newQuantities);
+
+                                // Calculate total quantity from all products
+                                const totalQty = (
+                                  Object.values(newQuantities) as number[]
+                                ).reduce((sum, q) => sum + q, 0);
+                                setSelectedQuantity(totalQty);
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  quantity: totalQty,
+                                }));
+                              }}
+                              label={`Quantity for ${item.description}`}
+                              placeholder="Enter quantity"
+                              showSuggestions={true}
+                            />
+
+                            {productQuantities[item.id] > 0 && (
+                              <div className="mt-2 p-2 bg-white rounded border border-blue-300">
+                                <p className="text-sm text-green-700 font-medium">
+                                  ✅ Selected: {productQuantities[item.id]}{" "}
+                                  units
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+                    )}
+
+                    {/* Total Summary */}
+                    <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg p-4 mt-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm opacity-90">
+                            Total Job Card Quantity
+                          </p>
+                          <p className="text-2xl font-bold">
+                            {(
+                              Object.values(productQuantities) as number[]
+                            ).reduce((sum, q) => sum + q, 0)}{" "}
+                            units
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm opacity-90">
+                            Products Selected
+                          </p>
+                          <p className="text-2xl font-bold">
+                            {
+                              (
+                                Object.values(productQuantities) as number[]
+                              ).filter((q) => q > 0).length
+                            }{" "}
+                            / {selectedBindingAdvice.lineItems.length}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Package className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>No products found in this binding advice</p>
+                  </div>
+                )}
+              </div>
+            </>
           )}
 
           {/* Production Details */}
@@ -350,50 +467,6 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Package className="inline h-4 w-4 mr-1" />
-                Current Stage *
-              </label>
-              <select
-                value={formData.currentStage}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    currentStage: e.target.value,
-                  }))
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                required
-              >
-                {productionStages.map((stage) => (
-                  <option key={stage.key} value={stage.key}>
-                    {stage.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Progress (%)
-              </label>
-              <input
-                type="number"
-                value={formData.progress}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    progress: parseInt(e.target.value) || 0,
-                  }))
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                min="0"
-                max="100"
               />
             </div>
           </div>

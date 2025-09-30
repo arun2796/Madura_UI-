@@ -4,6 +4,12 @@ import axios, { AxiosResponse, AxiosError } from "axios";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 
+// Log API configuration on startup
+console.log("🔧 API Configuration:");
+console.log("  Base URL:", API_BASE_URL);
+console.log("  Environment:", import.meta.env.MODE);
+console.log("  VITE_API_BASE_URL:", import.meta.env.VITE_API_BASE_URL);
+
 // Create axios instance
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -25,14 +31,31 @@ apiClient.interceptors.request.use(
 // Response interceptor
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
-    console.log(`✅ ${response.status} ${response.config.url}`);
+    console.log(`✅ ${response.status} ${response.config.url}`, {
+      dataLength: Array.isArray(response.data) ? response.data.length : "N/A",
+      data: response.data,
+    });
     return response;
   },
   (error: AxiosError) => {
-    console.error(
-      `❌ ${error.response?.status} ${error.config?.url}`,
-      error.response?.data
-    );
+    console.error(`❌ API Error:`, {
+      status: error.response?.status,
+      url: error.config?.url,
+      message: error.message,
+      data: error.response?.data,
+      baseURL: error.config?.baseURL,
+    });
+
+    // Show user-friendly error message
+    if (
+      error.code === "ERR_NETWORK" ||
+      error.message.includes("Network Error")
+    ) {
+      console.error("🔴 NETWORK ERROR: Cannot connect to API server!");
+      console.error("   Make sure JSON server is running on:", API_BASE_URL);
+      console.error("   Run: npm run server");
+    }
+
     return Promise.reject(error);
   }
 );
@@ -187,6 +210,14 @@ export interface BindingAdvice {
     rate: number;
     amount: number;
   }>;
+  // Quantity tracking
+  allocatedQuantity?: number; // Total allocated to job cards
+  remainingQuantity?: number; // Balance available
+  jobCardAllocations?: Array<{
+    jobCardId: string;
+    allocatedQuantity: number;
+    allocatedDate: string;
+  }>;
 }
 
 export interface JobCard {
@@ -210,6 +241,49 @@ export interface JobCard {
   notes?: string;
   priority?: string;
   completionDate?: string;
+  // Quantity tracking
+  allocatedQuantity?: number; // Total allocated from binding advice
+  stageAllocatedQuantity?: number; // Total allocated to stages
+  remainingQuantity?: number; // Balance available for stages
+  completedQuantity?: number; // Total completed across all stages
+  // Product-wise allocations (from binding advice line items)
+  productAllocations?: Array<{
+    productId: string;
+    productName: string;
+    allocatedQuantity: number;
+    completedQuantity: number;
+    remainingQuantity: number;
+  }>;
+  // Stage allocations with product-wise tracking
+  stageAllocations?: Array<{
+    stageKey: string;
+    stageName: string;
+    allocatedQuantity: number;
+    completedQuantity: number;
+    remainingQuantity: number;
+    status: "pending" | "in_progress" | "completed";
+    startDate: string | null;
+    completedDate: string | null;
+    canMoveNext: boolean; // True only if 100% completed
+    productProgress?: Array<{
+      productId: string;
+      productName: string;
+      completedQuantity: number;
+    }>;
+  }>;
+  // Dispatch tracking
+  dispatchedQuantity?: number; // Total dispatched
+  availableForDispatch?: number; // Completed but not yet dispatched
+  dispatches?: Array<{
+    dispatchId: string;
+    dispatchedQuantity: number;
+    dispatchDate: string;
+    productBreakdown?: Array<{
+      productId: string;
+      productName: string;
+      quantity: number;
+    }>;
+  }>;
 }
 
 export interface InventoryItem {
