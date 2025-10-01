@@ -19,6 +19,8 @@ import {
 import { JobCard } from "../../services/api";
 import QuantitySelector from "../QuantitySelector";
 import QuantityAllocationDisplay from "../QuantityAllocationDisplay";
+import FinishedProductsTable from "../tables/FinishedProductsTable";
+import { useInventoryItems } from "../../hooks/useApiQueries";
 
 interface JobCardFormProps {
   isOpen: boolean;
@@ -34,6 +36,7 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
   const { data: bindingAdvices = [] } = useBindingAdvices();
   const { data: allJobCards = [] } = useJobCards();
   const { data: clients = [] } = useClients();
+  const { data: inventoryItems = [] } = useInventoryItems();
   const createJobCardMutation = useCreateJobCard();
   const updateJobCardMutation = useUpdateJobCard();
   const updateClientMutation = useUpdateClient();
@@ -67,6 +70,31 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
     "Quality Team",
     "Packing Team",
   ];
+
+  // Helper function to match finished products
+  const getFinishedProduct = (description: string, pages: number) => {
+    return inventoryItems.find(
+      (item) =>
+        item.category === "finished_product" &&
+        (item.itemName.toLowerCase().includes(description.toLowerCase()) ||
+          description.toLowerCase().includes(item.itemName.toLowerCase())) &&
+        (item.specifications?.pages === pages || !item.specifications?.pages)
+    );
+  };
+
+  // Get finished products for display
+  const finishedProducts = inventoryItems.filter(
+    (item) => item.category === "finished_product"
+  );
+
+  // Convert binding advice line items to the format expected by the table
+  const lineItems =
+    selectedBindingAdvice?.lineItems?.map((item: any) => ({
+      id: item.id,
+      description: item.description,
+      pages: item.pages,
+      quantity: productQuantities[item.id] || 0,
+    })) || [];
 
   // Get approved binding advices that don't have job cards yet
   const availableBindingAdvices = bindingAdvices.filter(
@@ -261,27 +289,25 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
         }
       );
     } else {
-      // Validate client availability before creating job card
-      if (selectedClient && selectedClient.products) {
+      // Validate binding advice availability before creating job card
+      if (selectedBindingAdvice && selectedBindingAdvice.lineItems) {
         let hasAvailabilityIssue = false;
 
-        selectedBindingAdvice?.lineItems?.forEach((item: any) => {
-          const clientProduct = selectedClient.products.find(
-            (p: any) => p.productName === item.description
-          );
+        selectedBindingAdvice.lineItems.forEach((item: any) => {
           const requestedQty = productQuantities[item.id] || 0;
+          const availableQty = item.availableQuantity || item.quantity;
 
-          if (clientProduct && requestedQty > clientProduct.availableQuantity) {
+          if (requestedQty > availableQty) {
             hasAvailabilityIssue = true;
             setAvailabilityError(
-              `Insufficient availability for ${item.description}. Available: ${clientProduct.availableQuantity}, Requested: ${requestedQty}`
+              `Insufficient availability for ${item.description}. Available: ${availableQty}, Requested: ${requestedQty}`
             );
           }
         });
 
         if (hasAvailabilityIssue) {
           alert(
-            "Cannot create job card: Insufficient client product availability"
+            "Cannot create job card: Insufficient product availability in binding advice"
           );
           return;
         }
@@ -290,36 +316,49 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
       // Create new job card using React Query mutation
       createJobCardMutation.mutate(jobCardData, {
         onSuccess: async (newJobCard) => {
-          // Update client availability
-          if (selectedClient && selectedClient.products) {
-            const updatedProducts = selectedClient.products.map((p: any) => {
-              const lineItem = selectedBindingAdvice?.lineItems?.find(
-                (item: any) => item.description === p.productName
-              );
+          // Update binding advice line items with allocated quantities
+          if (selectedBindingAdvice && selectedBindingAdvice.lineItems) {
+            const updatedLineItems = selectedBindingAdvice.lineItems.map(
+              (item: any) => {
+                const allocatedQty = productQuantities[item.id] || 0;
 
-              if (lineItem) {
-                const allocatedQty = productQuantities[lineItem.id] || 0;
+                if (allocatedQty > 0) {
+                  return {
+                    ...item,
+                    availableQuantity:
+                      (item.availableQuantity || item.quantity) - allocatedQty,
+                    allocatedQuantity:
+                      (item.allocatedQuantity || 0) + allocatedQty,
+                  };
+                }
                 return {
-                  ...p,
-                  availableQuantity: p.availableQuantity - allocatedQty,
-                  reservedQuantity: p.reservedQuantity + allocatedQty,
+                  ...item,
+                  availableQuantity: item.availableQuantity || item.quantity,
+                  allocatedQuantity: item.allocatedQuantity || 0,
                 };
               }
-              return p;
-            });
+            );
 
-            // Update client with new availability
+            // Update binding advice with new availability
             try {
-              await updateClientMutation.mutateAsync({
-                id: selectedClient.id,
-                data: {
-                  ...selectedClient,
-                  products: updatedProducts,
-                },
-              });
-              console.log("Client availability updated successfully");
+              await fetch(
+                `http://localhost:3002/bindingAdvices/${selectedBindingAdvice.id}`,
+                {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    ...selectedBindingAdvice,
+                    lineItems: updatedLineItems,
+                    updatedAt: new Date().toISOString(),
+                  }),
+                }
+              );
+              console.log("Binding advice availability updated successfully");
             } catch (error) {
-              console.error("Failed to update client availability:", error);
+              console.error(
+                "Failed to update binding advice availability:",
+                error
+              );
             }
           }
 
@@ -408,10 +447,14 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
                   <div className="space-y-4">
                     {selectedBindingAdvice.lineItems.map(
                       (item: any, index: number) => {
-                        // Calculate available quantity for this product
+                        // Calculate available quantity for this product from binding advice
                         const productTotalQty = item.quantity || 0;
+                        const productAllocated = item.allocatedQuantity || 0;
+                        const productAvailable =
+                          (item.availableQuantity || productTotalQty) -
+                          productAllocated;
 
-                        // Find client product availability
+                        // Find client product availability (for display only)
                         const clientProduct = selectedClient?.products?.find(
                           (p: any) => p.productName === item.description
                         );
@@ -420,9 +463,6 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
                         const clientReserved =
                           clientProduct?.reservedQuantity || 0;
                         const clientTotal = clientProduct?.totalOrdered || 0;
-
-                        // Calculate already allocated to other job cards for this product
-                        const productAvailable = productTotalQty;
 
                         return (
                           <div
@@ -617,6 +657,19 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
               ))}
             </select>
           </div>
+
+          {/* Finished Products Table */}
+          {selectedBindingAdvice && lineItems.length > 0 && (
+            <FinishedProductsTable
+              lineItems={lineItems}
+              finishedProducts={finishedProducts}
+              getMatchedProduct={getFinishedProduct}
+              title="Job Card - Finished Products Allocation"
+              subtitle="Products that will be allocated for this job card"
+              variant="matching"
+              showPricing={true}
+            />
+          )}
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">

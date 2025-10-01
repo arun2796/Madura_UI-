@@ -7,7 +7,7 @@ import {
   Info,
   Lightbulb,
 } from "lucide-react";
-import { useCreateBatch } from "../hooks/useBatchQueries";
+import { useCreateBatch, useBatchesByJobCard } from "../hooks/useBatchQueries";
 import { useJobCard, useUpdateJobCard } from "../hooks/useApiQueries";
 import {
   validateBatchRange,
@@ -30,6 +30,7 @@ const BatchCreationModalRange: React.FC<BatchCreationModalRangeProps> = ({
   jobCardId,
 }) => {
   const { data: jobCard } = useJobCard(jobCardId);
+  const { data: existingBatches = [] } = useBatchesByJobCard(jobCardId);
   const createBatch = useCreateBatch();
   const updateJobCard = useUpdateJobCard();
 
@@ -40,12 +41,19 @@ const BatchCreationModalRange: React.FC<BatchCreationModalRangeProps> = ({
   const [teamId, setTeamId] = useState<string>("team_design");
 
   // Calculate available quantity and gaps
-  const existingBatches = jobCard?.batches || [];
   const totalQuantity = jobCard?.quantity || 0;
   const remainingQuantity = calculateRemainingQuantity(
     totalQuantity,
     existingBatches
   );
+
+  console.log("🔍 Batch Creation Debug:", {
+    jobCardId,
+    totalQuantity,
+    existingBatches: existingBatches.length,
+    remainingQuantity,
+    batches: existingBatches,
+  });
 
   // Safely calculate gaps with error handling
   const gaps = React.useMemo(() => {

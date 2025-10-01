@@ -263,21 +263,23 @@ const FinishedProducts = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
-                      {Object.entries(item.specifications)
-                        .slice(0, 3)
-                        .map(([key, value]) => (
-                          <div key={key} className="flex">
-                            <span className="font-medium text-gray-600 w-16">
-                              {key}:
-                            </span>
-                            <span className="text-gray-900">{value}</span>
+                      {item.specifications &&
+                        Object.entries(item.specifications)
+                          .slice(0, 3)
+                          .map(([key, value]) => (
+                            <div key={key} className="flex">
+                              <span className="font-medium text-gray-600 w-16">
+                                {key}:
+                              </span>
+                              <span className="text-gray-900">{value}</span>
+                            </div>
+                          ))}
+                      {item.specifications &&
+                        Object.keys(item.specifications).length > 3 && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            +{Object.keys(item.specifications).length - 3} more
                           </div>
-                        ))}
-                      {Object.keys(item.specifications).length > 3 && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          +{Object.keys(item.specifications).length - 3} more
-                        </div>
-                      )}
+                        )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

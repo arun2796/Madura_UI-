@@ -18,6 +18,8 @@ import {
 } from "../../hooks/useApiQueries";
 import { useProductionBatches } from "../../hooks/useBatchQueries";
 import { formatRange } from "../../utils/batchRangeValidation";
+import FinishedProductsTable from "../tables/FinishedProductsTable";
+import { useInventoryItems } from "../../hooks/useApiQueries";
 
 interface DispatchFormProps {
   isOpen: boolean;
@@ -46,6 +48,7 @@ const DispatchForm: React.FC<DispatchFormProps> = ({
   // Use React Query hooks for API operations
   const { data: jobCards = [] } = useJobCards();
   const { data: allBatches = [] } = useProductionBatches();
+  const { data: inventoryItems = [] } = useInventoryItems();
   const createDispatch = useCreateDispatch();
   const updateDispatch = useUpdateDispatch();
   const updateJobCard = useUpdateJobCard();
@@ -65,6 +68,22 @@ const DispatchForm: React.FC<DispatchFormProps> = ({
     // 2. Available quantity not yet dispatched
     return isCompleted && hasAvailableQuantity;
   });
+
+  // Helper function to match finished products
+  const getFinishedProduct = (description: string, pages: number) => {
+    return inventoryItems.find(
+      (item) =>
+        item.category === "finished_product" &&
+        (item.itemName.toLowerCase().includes(description.toLowerCase()) ||
+          description.toLowerCase().includes(item.itemName.toLowerCase())) &&
+        (item.specifications?.pages === pages || !item.specifications?.pages)
+    );
+  };
+
+  // Get finished products for display
+  const finishedProducts = inventoryItems.filter(
+    (item) => item.category === "finished_product"
+  );
 
   // Group batches by job card for display
   const batchesByJobCard = completedBatches.reduce((acc, batch) => {
@@ -138,6 +157,18 @@ const DispatchForm: React.FC<DispatchFormProps> = ({
     { name: "Speed Delivery", contact: "9876543236" },
     { name: "Safe Transport", contact: "9876543238" },
   ];
+
+  // Convert dispatch data to the format expected by the table
+  const lineItems = formData.batchId
+    ? [
+        {
+          id: `dispatch-batch-${formData.batchId}`,
+          description: formData.notebookSize || "Unknown Product",
+          pages: 96, // Default pages, could be extracted from product name
+          quantity: formData.quantity || 0,
+        },
+      ]
+    : [];
 
   // Get job cards that have completed batches available for dispatch
   const completedJobCards = jobCards.filter((jc) => {
@@ -341,13 +372,21 @@ const DispatchForm: React.FC<DispatchFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Get the selected batch to ensure we have the correct product name
+    const selectedBatch = allBatches.find(
+      (batch) => batch.id === formData.batchId
+    );
+    const productName =
+      selectedBatch?.productName || formData.notebookSize || "Unknown Product";
+
     const dispatchData = {
       jobCardId: formData.jobCardId,
+      batchId: formData.batchId, // Include batch ID for tracking
       clientName: formData.clientName,
       deliveryLocation: formData.deliveryLocation,
       deliveryAddress: formData.deliveryAddress,
       quantity: formData.quantity,
-      notebookSize: formData.notebookSize,
+      notebookSize: productName, // Use batch product name
       scheduledDate: formData.scheduledDate,
       status: "scheduled" as const,
       transporter: formData.transporter,
@@ -968,6 +1007,19 @@ const DispatchForm: React.FC<DispatchFormProps> = ({
               placeholder="Additional notes or special instructions..."
             />
           </div>
+
+          {/* Finished Products Table */}
+          {lineItems.length > 0 && (
+            <FinishedProductsTable
+              lineItems={lineItems}
+              finishedProducts={finishedProducts}
+              getMatchedProduct={getFinishedProduct}
+              title="Dispatch - Finished Products Impact"
+              subtitle="Products being dispatched and their inventory impact"
+              variant="matching"
+              showPricing={true}
+            />
+          )}
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">

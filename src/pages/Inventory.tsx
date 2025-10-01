@@ -405,21 +405,23 @@ const Inventory = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
-                      {Object.entries(item.specifications)
-                        .slice(0, 3)
-                        .map(([key, value]) => (
-                          <div key={key} className="flex">
-                            <span className="font-medium text-gray-600 w-16">
-                              {key}:
-                            </span>
-                            <span className="text-gray-900">{value}</span>
+                      {item.specifications &&
+                        Object.entries(item.specifications)
+                          .slice(0, 3)
+                          .map(([key, value]) => (
+                            <div key={key} className="flex">
+                              <span className="font-medium text-gray-600 w-16">
+                                {key}:
+                              </span>
+                              <span className="text-gray-900">{value}</span>
+                            </div>
+                          ))}
+                      {item.specifications &&
+                        Object.keys(item.specifications).length > 3 && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            +{Object.keys(item.specifications).length - 3} more
                           </div>
-                        ))}
-                      {Object.keys(item.specifications).length > 3 && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          +{Object.keys(item.specifications).length - 3} more
-                        </div>
-                      )}
+                        )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -481,13 +483,15 @@ const Inventory = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full items-center space-x-1 ${getStatusColor(
-                        item.status
+                        item.status || "unknown"
                       )}`}
                     >
-                      {getStatusIcon(item.status)}
+                      {getStatusIcon(item.status || "unknown")}
                       <span className="ml-1">
-                        {item.status.charAt(0).toUpperCase() +
-                          item.status.slice(1)}
+                        {item.status
+                          ? item.status.charAt(0).toUpperCase() +
+                            item.status.slice(1)
+                          : "Unknown"}
                       </span>
                     </span>
                   </td>
@@ -532,20 +536,21 @@ const Inventory = () => {
                     </h3>
                     <span
                       className={`px-2 py-1 text-xs rounded-full ${getStatusColor(
-                        item.status
+                        item.status || "unknown"
                       )}`}
                     >
                       {item.currentStock} {item.unit}
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                    {Object.entries(item.specifications)
-                      .slice(0, 4)
-                      .map(([key, value]) => (
-                        <div key={key}>
-                          <span className="font-medium">{key}:</span> {value}
-                        </div>
-                      ))}
+                    {item.specifications &&
+                      Object.entries(item.specifications)
+                        .slice(0, 4)
+                        .map(([key, value]) => (
+                          <div key={key}>
+                            <span className="font-medium">{key}:</span> {value}
+                          </div>
+                        ))}
                   </div>
                 </div>
               ))}
@@ -579,13 +584,14 @@ const Inventory = () => {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                    {Object.entries(item.specifications)
-                      .slice(0, 4)
-                      .map(([key, value]) => (
-                        <div key={key}>
-                          <span className="font-medium">{key}:</span> {value}
-                        </div>
-                      ))}
+                    {item.specifications &&
+                      Object.entries(item.specifications)
+                        .slice(0, 4)
+                        .map(([key, value]) => (
+                          <div key={key}>
+                            <span className="font-medium">{key}:</span> {value}
+                          </div>
+                        ))}
                   </div>
                 </div>
               ))}

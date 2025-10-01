@@ -93,14 +93,17 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
       // Add items from binding advice line items if available
       if (bindingAdvice.lineItems && bindingAdvice.lineItems.length > 0) {
         bindingAdvice.lineItems.forEach((lineItem: any, index: number) => {
+          // Use job card quantity instead of binding advice quantity
+          const jobCardQuantity =
+            jobCard.producedQuantity || jobCard.quantity || 0;
           items.push({
             id: (index + 1).toString(),
             description: `${lineItem.description} - ${
               bindingAdvice.pages || 96
             } Pages`,
-            quantity: lineItem.quantity || 0,
+            quantity: jobCardQuantity,
             rate: lineItem.rate || 15,
-            amount: (lineItem.quantity || 0) * (lineItem.rate || 15),
+            amount: jobCardQuantity * (lineItem.rate || 15),
           });
         });
       } else {
