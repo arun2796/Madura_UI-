@@ -5,25 +5,17 @@ import {
   useCalculationRules,
   useTeams,
   useClients,
-  useActivePaperSizes,
-  useActiveNotebookTypes,
-  useActiveCalculationRules,
-  useActiveTeams,
-  useActiveClients,
+  
   useMasterDataAnalytics,
   useBulkMasterDataOperations,
   useCreatePaperSize,
   useUpdatePaperSize,
   useDeletePaperSize,
   useTogglePaperSizeStatus,
-  PaperSize,
-  NotebookType,
-  CalculationRule,
-  Team,
-  Client,
+ 
 } from '../hooks/useMasterDataEnhanced';
 import { PaperSizeForm, NotebookTypeForm, TeamForm } from '../components/forms/MasterDataForms';
-import { Plus, Edit, Trash2, ToggleLeft, ToggleRight, Search, Filter } from 'lucide-react';
+import { Plus, Edit, Trash2, ToggleLeft, ToggleRight, Search } from 'lucide-react';
 
 const MasterDataEnhanced: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'paperSizes' | 'notebookTypes' | 'calculationRules' | 'teams' | 'clients' | 'analytics'>('paperSizes');

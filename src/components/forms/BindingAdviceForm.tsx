@@ -11,6 +11,7 @@ import {
   useInventoryItems,
   useCreateJobCard,
 } from "../../hooks/useApiQueries";
+import { inventoryUpdateService } from "../../services/inventoryUpdateService";
 
 interface BindingAdviceFormProps {
   isOpen: boolean;
@@ -89,6 +90,47 @@ const BindingAdviceForm: React.FC<BindingAdviceFormProps> = ({
           description.toLowerCase().includes(item.itemName.toLowerCase())) &&
         (item.specifications?.pages === pages || !item.specifications?.pages)
     );
+  };
+
+  // Get finished products with comprehensive availability info
+  const getFinishedProductsWithAvailability = () => {
+    return inventoryItems
+      .filter((item) => item.category === "finished_product")
+      .map((item) => {
+        const currentStock = item.currentStock || 0;
+        const reservedQuantity = item.reservedQuantity || 0;
+        const availableQuantity = Math.max(0, currentStock - reservedQuantity);
+
+        // Calculate quantities from current line items that would be reserved
+        const pendingReservation = lineItems.reduce((total, lineItem) => {
+          const matchedProduct = getFinishedProduct(
+            lineItem.description,
+            lineItem.pages
+          );
+          if (matchedProduct && matchedProduct.id === item.id) {
+            return total + lineItem.quantity;
+          }
+          return total;
+        }, 0);
+
+        const projectedAvailable = Math.max(
+          0,
+          availableQuantity - pendingReservation
+        );
+
+        return {
+          ...item,
+          currentStock,
+          reservedQuantity,
+          availableQuantity,
+          pendingReservation,
+          projectedAvailable,
+          minStock: item.minStock || 0,
+          maxStock: item.maxStock || 0,
+          lastProduced: (item as any).lastProduced || "Never",
+          sellingPrice: item.sellingPrice || 0,
+        };
+      });
   };
 
   // Create job card from binding advice
@@ -450,7 +492,10 @@ const BindingAdviceForm: React.FC<BindingAdviceFormProps> = ({
       lineItems: lineItems.map((item) => ({
         id: item.id,
         description: item.description,
+        pages: item.pages,
         quantity: item.quantity,
+        reams: item.reams,
+        sheets: item.sheets,
         rate: 15,
         amount: item.quantity * 15,
       })),
@@ -468,7 +513,41 @@ const BindingAdviceForm: React.FC<BindingAdviceFormProps> = ({
       );
     } else {
       createBindingAdvice.mutate(adviceData, {
-        onSuccess: () => {
+        onSuccess: async (createdAdvice) => {
+          // Reserve inventory for finished products using new service
+          const finishedProductReservations = lineItems
+            .map((item) => {
+              const finishedProduct = getFinishedProduct(
+                item.description,
+                item.pages
+              );
+              if (finishedProduct) {
+                return {
+                  itemId: finishedProduct.id,
+                  quantity: item.quantity,
+                };
+              }
+              return null;
+            })
+            .filter(Boolean) as Array<{ itemId: string; quantity: number }>;
+
+          if (finishedProductReservations.length > 0) {
+            try {
+              // Use the new comprehensive inventory service
+              await inventoryUpdateService.reserveForBindingAdvice(
+                createdAdvice.id,
+                finishedProductReservations
+              );
+              console.log(
+                "✅ Inventory reserved successfully for binding advice:",
+                createdAdvice.id
+              );
+            } catch (error) {
+              console.error("❌ Failed to reserve inventory:", error);
+              // Still close the form even if reservation fails
+            }
+          }
+
           onClose();
           resetForm();
         },
@@ -835,6 +914,503 @@ const BindingAdviceForm: React.FC<BindingAdviceFormProps> = ({
                 <Plus className="h-4 w-4" />
                 <span>Add Line Item</span>
               </button>
+            </div>
+          </div>
+
+          {/* Finished Products Matching Table */}
+          <div className="border border-gray-300 rounded-lg overflow-hidden">
+            <div className="bg-green-50 px-4 py-3 border-b border-green-200">
+              <h3 className="font-medium text-green-900 flex items-center">
+                <span className="mr-2">🎯</span>
+                Matched Finished Products
+              </h3>
+              <p className="text-sm text-green-700 mt-1">
+                Products that match your line items and will be reserved
+              </p>
+            </div>
+            <div className="max-h-64 overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-100 sticky top-0">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Line Item
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Matched Product
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Required Qty
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Available
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      After Reserve
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Status
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Price
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {lineItems.map((lineItem) => {
+                    const matchedProduct = getFinishedProduct(
+                      lineItem.description,
+                      lineItem.pages
+                    );
+                    const available = matchedProduct
+                      ? (matchedProduct.currentStock || 0) -
+                        (matchedProduct.reservedQuantity || 0)
+                      : 0;
+                    const afterReserve = Math.max(
+                      0,
+                      available - lineItem.quantity
+                    );
+                    const canFulfill = available >= lineItem.quantity;
+
+                    return (
+                      <tr
+                        key={lineItem.id}
+                        className={`hover:bg-gray-50 ${
+                          !canFulfill ? "bg-red-50" : ""
+                        }`}
+                      >
+                        <td className="px-3 py-2">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-gray-900">
+                              {lineItem.description}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {lineItem.pages} Pages - {lineItem.quantity} units
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2">
+                          {matchedProduct ? (
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium text-green-700">
+                                ✓ {matchedProduct.itemName}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                ID: {matchedProduct.id.slice(-8)}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-red-600">
+                              ❌ No match found
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2">
+                          <span className="text-sm font-bold text-blue-600">
+                            {lineItem.quantity.toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2">
+                          <span
+                            className={`text-sm font-medium ${
+                              available > 0 ? "text-green-600" : "text-red-600"
+                            }`}
+                          >
+                            {available.toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2">
+                          <span
+                            className={`text-sm font-bold ${
+                              afterReserve > 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {afterReserve.toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2">
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              !matchedProduct
+                                ? "bg-gray-100 text-gray-800"
+                                : canFulfill
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {!matchedProduct
+                              ? "No Match"
+                              : canFulfill
+                              ? "Can Fulfill"
+                              : "Insufficient"}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2">
+                          {matchedProduct && (
+                            <div className="flex flex-col text-xs">
+                              <span className="text-gray-700 font-medium">
+                                ₹
+                                {(
+                                  matchedProduct.sellingPrice || 0
+                                ).toLocaleString()}
+                              </span>
+                              <span className="text-gray-500">
+                                Total: ₹
+                                {(
+                                  (matchedProduct.sellingPrice || 0) *
+                                  lineItem.quantity
+                                ).toLocaleString()}
+                              </span>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {lineItems.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="px-4 py-8 text-center text-gray-500"
+                      >
+                        Add line items to see matched finished products
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Matching Summary */}
+            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="text-center">
+                  <div className="font-bold text-gray-900">
+                    {lineItems.length}
+                  </div>
+                  <div className="text-gray-500">Line Items</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold text-green-600">
+                    {
+                      lineItems.filter((item) =>
+                        getFinishedProduct(item.description, item.pages)
+                      ).length
+                    }
+                  </div>
+                  <div className="text-gray-500">Matched</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold text-blue-600">
+                    {lineItems
+                      .reduce((sum, item) => sum + item.quantity, 0)
+                      .toLocaleString()}
+                  </div>
+                  <div className="text-gray-500">Total Quantity</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold text-purple-600">
+                    ₹
+                    {lineItems
+                      .reduce((sum, item) => {
+                        const product = getFinishedProduct(
+                          item.description,
+                          item.pages
+                        );
+                        return (
+                          sum +
+                          (product
+                            ? (product.sellingPrice || 0) * item.quantity
+                            : 0)
+                        );
+                      }, 0)
+                      .toLocaleString()}
+                  </div>
+                  <div className="text-gray-500">Total Value</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Enhanced Finished Products Inventory Table */}
+          <div className="border border-gray-300 rounded-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 border-b border-blue-200">
+              <h3 className="font-medium text-blue-900 flex items-center">
+                <span className="mr-2">📦</span>
+                Finished Products Inventory Management
+              </h3>
+              <p className="text-sm text-blue-700 mt-1">
+                Real-time stock levels, reservations, and availability tracking
+              </p>
+            </div>
+            <div className="max-h-80 overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-100 sticky top-0">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Product
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Specifications
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Current Stock
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Reserved
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Available
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Pending
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      After Order
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Cost/Price
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {getFinishedProductsWithAvailability().map((product) => (
+                    <tr
+                      key={product.id}
+                      className={`hover:bg-gray-50 ${
+                        product.pendingReservation > 0 ? "bg-yellow-50" : ""
+                      }`}
+                    >
+                      <td className="px-3 py-2">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-gray-900">
+                            {product.itemName}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            ID: {product.id.slice(-8)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex flex-col text-xs">
+                          {product.specifications?.pages && (
+                            <span className="text-blue-600 font-medium">
+                              {product.specifications.pages} Pages
+                            </span>
+                          )}
+                          {product.specifications?.size && (
+                            <span className="text-gray-500">
+                              Size: {product.specifications.size}
+                            </span>
+                          )}
+                          {product.specifications?.ruling && (
+                            <span className="text-gray-500">
+                              {product.specifications.ruling}
+                            </span>
+                          )}
+                          {(!product.specifications ||
+                            Object.keys(product.specifications).length ===
+                              0) && (
+                            <span className="text-gray-400 italic">
+                              No specifications
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-gray-900">
+                            {product.currentStock.toLocaleString()}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            Min: {product.minStock} / Max: {product.maxStock}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <span className="text-sm font-medium text-orange-600">
+                          {product.reservedQuantity.toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={`text-sm font-bold ${
+                            product.availableQuantity > 0
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {product.availableQuantity.toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={`text-sm font-medium ${
+                            product.pendingReservation > 0
+                              ? "text-yellow-600"
+                              : "text-gray-400"
+                          }`}
+                        >
+                          {product.pendingReservation > 0
+                            ? `+${product.pendingReservation.toLocaleString()}`
+                            : "0"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={`text-sm font-bold ${
+                            product.projectedAvailable > 0
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {product.projectedAvailable.toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex flex-col text-xs">
+                          <span className="text-gray-600">
+                            ₹{(product.sellingPrice || 0).toLocaleString()}
+                          </span>
+                          <span className="text-gray-500">
+                            Cost: ₹
+                            {(product.productionCost || 0).toLocaleString()}
+                          </span>
+                          {product.sellingPrice && product.productionCost && (
+                            <span className="text-green-600 font-medium">
+                              Margin:{" "}
+                              {Math.round(
+                                ((product.sellingPrice -
+                                  product.productionCost) /
+                                  product.sellingPrice) *
+                                  100
+                              )}
+                              %
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex flex-col space-y-1">
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              product.projectedAvailable > 0
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {product.projectedAvailable > 0
+                              ? "Available"
+                              : "Insufficient"}
+                          </span>
+                          {product.pendingReservation > 0 && (
+                            <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                              Will Reserve
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {getFinishedProductsWithAvailability().length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={9}
+                        className="px-4 py-8 text-center text-gray-500"
+                      >
+                        No finished products found in inventory
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Summary Statistics */}
+            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                <div className="text-center">
+                  <div className="font-bold text-gray-900">
+                    {getFinishedProductsWithAvailability().length}
+                  </div>
+                  <div className="text-gray-500">Total Products</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold text-green-600">
+                    {
+                      getFinishedProductsWithAvailability().filter(
+                        (p) => p.availableQuantity > 0
+                      ).length
+                    }
+                  </div>
+                  <div className="text-gray-500">Available</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold text-yellow-600">
+                    {getFinishedProductsWithAvailability()
+                      .reduce((sum, p) => sum + p.pendingReservation, 0)
+                      .toLocaleString()}
+                  </div>
+                  <div className="text-gray-500">Pending Reservation</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold text-red-600">
+                    {
+                      getFinishedProductsWithAvailability().filter(
+                        (p) => p.projectedAvailable <= 0
+                      ).length
+                    }
+                  </div>
+                  <div className="text-gray-500">Will be Out of Stock</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold text-orange-600">
+                    {
+                      getFinishedProductsWithAvailability().filter(
+                        (p) => p.currentStock <= p.minStock
+                      ).length
+                    }
+                  </div>
+                  <div className="text-gray-500">Low Stock Alert</div>
+                </div>
+              </div>
+
+              {/* Warnings */}
+              {getFinishedProductsWithAvailability().some(
+                (p) => p.projectedAvailable < 0
+              ) && (
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center">
+                    <span className="text-red-600 font-medium">
+                      ⚠️ Warning:
+                    </span>
+                    <span className="ml-2 text-red-700">
+                      Some products will have insufficient stock after this
+                      order. Please review quantities.
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {getFinishedProductsWithAvailability().some(
+                (p) => p.currentStock <= p.minStock
+              ) && (
+                <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <div className="flex items-center">
+                    <span className="text-orange-600 font-medium">
+                      📊 Alert:
+                    </span>
+                    <span className="ml-2 text-orange-700">
+                      Some products are below minimum stock levels. Consider
+                      restocking soon.
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

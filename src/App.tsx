@@ -25,83 +25,95 @@ import ProductionStageDemo from "./pages/ProductionStageDemo";
 import ApiDiagnostics from "./pages/ApiDiagnostics";
 import { AuthProvider } from "./context/AuthContext";
 import { QueryProvider } from "./providers/QueryProvider";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <QueryProvider>
-      <AuthProvider>
-        <Router>
-          <div className="min-h-screen bg-gray-50">
-            <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+    <ErrorBoundary>
+      <QueryProvider>
+        <AuthProvider>
+          <Router>
+            <div className="min-h-screen bg-gray-50">
+              <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-            <div className="flex">
-              <Sidebar
-                isOpen={sidebarOpen}
-                onClose={() => setSidebarOpen(false)}
-              />
+              <div className="flex">
+                <Sidebar
+                  isOpen={sidebarOpen}
+                  onClose={() => setSidebarOpen(false)}
+                />
 
-              <main className="flex-1 transition-all duration-200 lg:ml-64">
-                <div className="p-6 pt-20 lg:pt-24">
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/binding-advice" element={<BindingAdvice />} />
-                    <Route
-                      path="/binding-advice/create"
-                      element={<BindingAdviceForm />}
-                    />
-                    <Route
-                      path="/binding-advice/edit"
-                      element={<BindingAdviceForm />}
-                    />
-                    <Route path="/job-cards" element={<JobCards />} />
-                    <Route
-                      path="/job-cards/:jobCardId/stages"
-                      element={<ProductionStageFlow />}
-                    />
-                    <Route
-                      path="/production-stage-demo"
-                      element={<ProductionStageDemo />}
-                    />
-                    <Route
-                      path="/api-diagnostics"
-                      element={<ApiDiagnostics />}
-                    />
-                    <Route
-                      path="/production-planning"
-                      element={<ProductionPlanning />}
-                    />
-                    <Route path="/inventory" element={<Inventory />} />
-                    <Route
-                      path="/inventory/raw-materials"
-                      element={<RawMaterials />}
-                    />
-                    <Route
-                      path="/inventory/finished-products"
-                      element={<FinishedProducts />}
-                    />
-                    <Route path="/dispatch" element={<Dispatch />} />
-                    <Route path="/billing" element={<Billing />} />
-                    <Route path="/billing/payments" element={<Payments />} />
-                    <Route path="/reports" element={<Reports />} />
-                    <Route path="/calculations" element={<Calculations />} />
-                    <Route path="/masters/*" element={<Masters />} />
-                    <Route path="/masters/teams" element={<Teams />} />
-                    <Route path="/system/users" element={<UserManagement />} />
-                    <Route path="/system/roles" element={<RoleManagement />} />
-                    <Route
-                      path="/system/settings"
-                      element={<SystemSettings />}
-                    />
-                  </Routes>
-                </div>
-              </main>
+                <main className="flex-1 transition-all duration-200 lg:ml-64">
+                  <div className="p-6 pt-20 lg:pt-24">
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route
+                        path="/binding-advice"
+                        element={<BindingAdvice />}
+                      />
+                      <Route
+                        path="/binding-advice/create"
+                        element={<BindingAdviceForm />}
+                      />
+                      <Route
+                        path="/binding-advice/edit"
+                        element={<BindingAdviceForm />}
+                      />
+                      <Route path="/job-cards" element={<JobCards />} />
+                      <Route
+                        path="/job-cards/:jobCardId/stages"
+                        element={<ProductionStageFlow />}
+                      />
+                      <Route
+                        path="/production-stage-demo"
+                        element={<ProductionStageDemo />}
+                      />
+                      <Route
+                        path="/api-diagnostics"
+                        element={<ApiDiagnostics />}
+                      />
+                      <Route
+                        path="/production-planning"
+                        element={<ProductionPlanning />}
+                      />
+                      <Route path="/inventory" element={<Inventory />} />
+                      <Route
+                        path="/inventory/raw-materials"
+                        element={<RawMaterials />}
+                      />
+                      <Route
+                        path="/inventory/finished-products"
+                        element={<FinishedProducts />}
+                      />
+                      <Route path="/dispatch" element={<Dispatch />} />
+                      <Route path="/billing" element={<Billing />} />
+                      <Route path="/billing/payments" element={<Payments />} />
+                      <Route path="/reports" element={<Reports />} />
+                      <Route path="/calculations" element={<Calculations />} />
+                      <Route path="/masters/*" element={<Masters />} />
+                      <Route path="/masters/teams" element={<Teams />} />
+                      <Route
+                        path="/system/users"
+                        element={<UserManagement />}
+                      />
+                      <Route
+                        path="/system/roles"
+                        element={<RoleManagement />}
+                      />
+                      <Route
+                        path="/system/settings"
+                        element={<SystemSettings />}
+                      />
+                    </Routes>
+                  </div>
+                </main>
+              </div>
             </div>
-          </div>
-        </Router>
-      </AuthProvider>
-    </QueryProvider>
+          </Router>
+        </AuthProvider>
+      </QueryProvider>
+    </ErrorBoundary>
   );
 }
 

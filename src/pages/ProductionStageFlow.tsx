@@ -9,6 +9,8 @@ import {
   FileText,
   ChevronRight,
   AlertCircle,
+  Layers,
+  Plus,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { DEFAULT_PRODUCTION_STAGES } from "../components/ProductionStageWizard";
@@ -17,6 +19,12 @@ import {
   useBindingAdvice,
   useUpdateBindingAdvice,
 } from "../hooks/useApiQueries";
+import { useBatchesByJobCard, useUpdateBatch } from "../hooks/useBatchQueries";
+import {
+  formatRange,
+  calculateQuantityFromRange,
+} from "../utils/batchRangeValidation";
+import BatchCreationModalRange from "../components/BatchCreationModalRange";
 
 export interface StageProgress {
   stageKey: string;
@@ -47,17 +55,75 @@ const ProductionStageFlow: React.FC = () => {
   );
   const updateBindingAdvice = useUpdateBindingAdvice();
 
+  // Fetch batches for this job card
+  const { data: batches = [], isLoading: batchesLoading } = useBatchesByJobCard(
+    jobCardId || ""
+  );
+  const updateBatch = useUpdateBatch();
+
   // Local state for stage management
+  const [selectedBatchId, setSelectedBatchId] = useState<string>("");
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
   const [stageNotes, setStageNotes] = useState<Record<string, string>>({});
   const [assignedTeam, setAssignedTeam] = useState(
     jobCard?.assignedTo || "Production Team A"
   );
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [batchCompletedQuantity, setBatchCompletedQuantity] =
+    useState<number>(0);
 
   // Stage progress data
   const [stageProgressData, setStageProgressData] = useState<StageProgress[]>(
     []
   );
+
+  // Get selected batch
+  const selectedBatch = batches.find((b) => b.id === selectedBatchId);
+
+  // Debug: Log batches on load
+  React.useEffect(() => {
+    if (batches.length > 0) {
+      console.log("Loaded batches:", batches);
+      console.log("Selected batch ID:", selectedBatchId);
+      console.log("Selected batch:", selectedBatch);
+    }
+  }, [batches, selectedBatchId, selectedBatch]);
+
+  // Auto-select first active batch if none selected
+  React.useEffect(() => {
+    if (!selectedBatchId && batches.length > 0) {
+      const firstActiveBatch = batches.find((b) => b.status === "active");
+      if (firstActiveBatch) {
+        console.log(
+          "🎯 Auto-selecting first active batch:",
+          firstActiveBatch.batchNumber,
+          "Stage:",
+          firstActiveBatch.currentStageIndex
+        );
+        setSelectedBatchId(firstActiveBatch.id);
+        // Initialize stage index from first batch
+        setCurrentStageIndex(firstActiveBatch.currentStageIndex || 0);
+      }
+    }
+  }, [batches, selectedBatchId]);
+
+  // Sync current stage index with selected batch
+  React.useEffect(() => {
+    if (selectedBatch) {
+      const stageName =
+        DEFAULT_PRODUCTION_STAGES[selectedBatch.currentStageIndex || 0]
+          ?.label || "Unknown";
+      console.log(
+        "🔄 Syncing batch:",
+        selectedBatch.batchNumber,
+        "→ Stage:",
+        selectedBatch.currentStageIndex,
+        `(${stageName})`
+      );
+      setCurrentStageIndex(selectedBatch.currentStageIndex || 0);
+      setBatchCompletedQuantity(0); // Reset quantity when switching batches
+    }
+  }, [selectedBatch]);
 
   // Initialize stage progress data from job card
   const initializeStageProgress = React.useCallback(() => {
@@ -151,6 +217,151 @@ const ProductionStageFlow: React.FC = () => {
       });
 
       setCurrentStageIndex(currentStageIndex + 1);
+    }
+  };
+
+  // Handle batch stage progression
+  const handleBatchStageProgress = async (
+    completedQuantity: number,
+    moveToNextStage: boolean = false
+  ) => {
+    if (!selectedBatch || !selectedBatchId) {
+      alert("Please select a batch first");
+      return;
+    }
+
+    const currentStageKey = getCurrentStageKey();
+    const isStageComplete = completedQuantity >= selectedBatch.quantity;
+
+    // Enforce 100% completion before moving to next stage
+    if (moveToNextStage && !isStageComplete) {
+      alert(
+        `Cannot move to next stage. Current stage must be 100% complete.\nCompleted: ${completedQuantity}/${selectedBatch.quantity}`
+      );
+      return;
+    }
+
+    // Update stage assignments
+    const updatedStageAssignments = {
+      ...selectedBatch.stageAssignments,
+      [currentStageKey]: {
+        ...selectedBatch.stageAssignments[currentStageKey],
+        completedAt: isStageComplete ? new Date().toISOString() : null,
+      },
+    };
+
+    // Determine next stage
+    let nextStage = selectedBatch.currentStage;
+    let nextStageIndex = currentStageIndex;
+    let batchCompleted = false;
+
+    if (moveToNextStage && isStageComplete) {
+      if (currentStageIndex < DEFAULT_PRODUCTION_STAGES.length - 1) {
+        nextStageIndex = currentStageIndex + 1;
+        nextStage = DEFAULT_PRODUCTION_STAGES[nextStageIndex].key as any;
+
+        // Initialize next stage assignment
+        updatedStageAssignments[nextStage] = {
+          teamId: assignedTeam,
+          teamName: assignedTeam,
+          startedAt: new Date().toISOString(),
+          completedAt: null,
+        };
+      } else {
+        // All stages completed
+        nextStage = "completed" as any;
+        batchCompleted = true;
+      }
+    }
+
+    try {
+      // Update batch
+      await updateBatch.mutateAsync({
+        id: selectedBatchId,
+        data: {
+          currentStage: nextStage,
+          currentStageIndex: nextStageIndex,
+          stageAssignments: updatedStageAssignments,
+          completed: batchCompleted,
+          status: batchCompleted ? "completed" : "active",
+          updatedAt: new Date().toISOString(),
+          completedAt: batchCompleted ? new Date().toISOString() : null,
+          availableForDispatch: batchCompleted ? selectedBatch.quantity : 0,
+        },
+      });
+
+      // If batch completed, update inventory
+      if (batchCompleted) {
+        await updateInventoryOnBatchComplete(selectedBatch);
+      }
+
+      // Move to next stage in UI
+      if (moveToNextStage && !batchCompleted) {
+        setCurrentStageIndex(nextStageIndex);
+      }
+
+      alert(
+        batchCompleted
+          ? "Batch completed! Inventory updated."
+          : moveToNextStage
+          ? "Moved to next stage successfully!"
+          : "Progress saved successfully!"
+      );
+    } catch (error) {
+      console.error("Failed to update batch:", error);
+      alert("Failed to update batch. Please try again.");
+    }
+  };
+
+  // Update inventory when batch completes all stages
+  const updateInventoryOnBatchComplete = async (batch: any) => {
+    try {
+      // Find inventory item for this product
+      const inventoryResponse = await fetch(
+        `http://localhost:3002/inventory?itemName=${encodeURIComponent(
+          batch.productName
+        )}`
+      );
+      const inventoryItems = await inventoryResponse.json();
+
+      if (inventoryItems.length > 0) {
+        // Update existing inventory item
+        const item = inventoryItems[0];
+        await fetch(`http://localhost:3002/inventory/${item.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            currentStock: item.currentStock + batch.quantity,
+            availableQuantity: (item.availableQuantity || 0) + batch.quantity,
+            updatedAt: new Date().toISOString(),
+          }),
+        });
+      } else {
+        // Create new inventory item
+        await fetch("http://localhost:3002/inventory", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            itemName: batch.productName,
+            category: "finished_product",
+            subcategory: "notebooks",
+            currentStock: batch.quantity,
+            availableQuantity: batch.quantity,
+            minStockLevel: 100,
+            maxStockLevel: 10000,
+            reorderPoint: 500,
+            unit: "pieces",
+            location: "Finished Goods Warehouse",
+            lastRestocked: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }),
+        });
+      }
+
+      console.log(`Inventory updated: +${batch.quantity} ${batch.productName}`);
+    } catch (error) {
+      console.error("Failed to update inventory:", error);
     }
   };
 
@@ -328,6 +539,103 @@ const ProductionStageFlow: React.FC = () => {
           </div>
         </div>
 
+        {/* Batch Selector */}
+        <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl shadow-lg p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Layers className="h-6 w-6 text-white" />
+              <h2 className="text-xl font-semibold text-white">
+                Production Batches
+              </h2>
+            </div>
+            <div className="flex items-center space-x-3">
+              {batches.length > 0 && (
+                <div className="text-white text-sm">
+                  {batches.length} batch{batches.length !== 1 ? "es" : ""}{" "}
+                  available
+                </div>
+              )}
+              <button
+                onClick={() => setShowBatchModal(true)}
+                className="flex items-center space-x-2 bg-white text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-50 transition-colors duration-200 font-medium"
+              >
+                <Plus className="h-5 w-5" />
+                <span>Create Batch</span>
+              </button>
+            </div>
+          </div>
+
+          {batches.length === 0 ? (
+            <div className="mt-4 bg-purple-500 bg-opacity-20 border-2 border-purple-300 rounded-lg p-8 text-center">
+              <Layers className="h-12 w-12 text-white mx-auto mb-3 opacity-50" />
+              <p className="text-white text-lg font-medium mb-2">
+                No batches created yet
+              </p>
+              <p className="text-purple-100 text-sm mb-4">
+                Create batches to start production tracking with range-based
+                management
+              </p>
+              <button
+                onClick={() => setShowBatchModal(true)}
+                className="inline-flex items-center space-x-2 bg-white text-purple-700 px-6 py-3 rounded-lg hover:bg-purple-50 transition-colors duration-200 font-medium"
+              >
+                <Plus className="h-5 w-5" />
+                <span>Create First Batch</span>
+              </button>
+            </div>
+          ) : (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {batches.map((batch) => (
+                <button
+                  key={batch.id}
+                  onClick={() => setSelectedBatchId(batch.id)}
+                  className={`p-4 rounded-lg border-2 transition-all duration-200 text-left ${
+                    selectedBatchId === batch.id
+                      ? "bg-white border-white shadow-lg"
+                      : "bg-purple-500 bg-opacity-20 border-purple-300 hover:bg-opacity-30"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span
+                      className={`font-semibold ${
+                        selectedBatchId === batch.id
+                          ? "text-purple-900"
+                          : "text-white"
+                      }`}
+                    >
+                      Batch #{batch.batchNumber}
+                    </span>
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${
+                        batch.status === "completed"
+                          ? "bg-green-100 text-green-800"
+                          : batch.status === "active"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {batch.status}
+                    </span>
+                  </div>
+                  <div
+                    className={`text-sm ${
+                      selectedBatchId === batch.id
+                        ? "text-purple-700"
+                        : "text-purple-100"
+                    }`}
+                  >
+                    <p>Range: {formatRange(batch.range)}</p>
+                    <p>Quantity: {batch.quantity} units</p>
+                    <p className="capitalize">
+                      Stage: {batch.currentStage.replace(/_/g, " ")}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Job Card Summary */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -424,7 +732,7 @@ const ProductionStageFlow: React.FC = () => {
           </div>
         </div>
 
-        {/* Current Stage Dropdown Navigation */}
+        {/* Current Stage Display (Read-Only) */}
         <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 border-b border-gray-200">
             <div className="flex items-center justify-between">
@@ -438,41 +746,70 @@ const ProductionStageFlow: React.FC = () => {
                 </p>
               </div>
               <div className="flex items-center space-x-2">
-                <select
-                  value={currentStageIndex}
-                  onChange={(e) => {
-                    const newIndex = parseInt(e.target.value);
-                    // Only allow navigation to current or previous completed stages
-                    if (newIndex <= currentStageIndex) {
-                      setCurrentStageIndex(newIndex);
-                    }
-                  }}
-                  className="px-4 py-2 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {DEFAULT_PRODUCTION_STAGES.map((stage, index) => {
-                    const stageData = stageProgressData[index];
-                    const isAccessible = index <= currentStageIndex;
-                    return (
-                      <option
-                        key={stage.key}
-                        value={index}
-                        disabled={!isAccessible}
-                      >
-                        {index + 1}. {stage.label} -{" "}
-                        {stageData?.status === "completed"
-                          ? "✅ Completed"
-                          : stageData?.status === "in_progress"
-                          ? "🔄 In Progress"
-                          : "🔒 Locked"}
-                      </option>
-                    );
-                  })}
-                </select>
+                {/* Stage indicator badge */}
+                <div className="px-4 py-2 bg-white bg-opacity-20 text-white rounded-lg border border-white border-opacity-30">
+                  <span className="font-semibold">
+                    {currentStageData?.label}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Stage Progress Summary */}
+          {/* Stage Progress Timeline */}
+          <div className="px-6 py-4 bg-gray-50">
+            <div className="flex items-center justify-between">
+              {DEFAULT_PRODUCTION_STAGES.map((stage, index) => {
+                const isCompleted = index < currentStageIndex;
+                const isCurrent = index === currentStageIndex;
+                const isPending = index > currentStageIndex;
+
+                return (
+                  <div key={stage.key} className="flex items-center">
+                    <div className="flex flex-col items-center">
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm ${
+                          isCompleted
+                            ? "bg-green-500 text-white"
+                            : isCurrent
+                            ? "bg-blue-600 text-white ring-4 ring-blue-200"
+                            : "bg-gray-300 text-gray-600"
+                        }`}
+                      >
+                        {isCompleted ? "✓" : index + 1}
+                      </div>
+                      <span
+                        className={`text-xs mt-2 font-medium ${
+                          isCurrent ? "text-blue-700" : "text-gray-600"
+                        }`}
+                      >
+                        {stage.label}
+                      </span>
+                    </div>
+                    {index < DEFAULT_PRODUCTION_STAGES.length - 1 && (
+                      <div
+                        className={`w-12 h-1 mx-2 ${
+                          isCompleted ? "bg-green-500" : "bg-gray-300"
+                        }`}
+                      ></div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Old dropdown removed - Stage is now controlled by batch progress */}
+          <div className="px-6 py-3 bg-blue-50 border-t border-blue-100">
+            <p className="text-sm text-blue-800">
+              <span className="font-semibold">Note:</span> Stage progression is
+              automatic. Complete the current stage to move to the next one.
+            </p>
+          </div>
+        </div>
+
+        {/* Stage Progress Summary - OLD SYSTEM (Keep for reference) */}
+        <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-4 bg-blue-50 rounded-lg">
@@ -610,113 +947,165 @@ const ProductionStageFlow: React.FC = () => {
             )}
 
             <div className="space-y-6">
-              {/* Product-wise Completion Tracking */}
-              {jobCard.productAllocations &&
-                jobCard.productAllocations.length > 0 && (
-                  <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
-                    <h4 className="font-medium text-blue-900 mb-3">
-                      Product Completion for {currentStageData?.label}
-                    </h4>
-                    <div className="space-y-3">
-                      {jobCard.productAllocations.map((product) => (
-                        <div
-                          key={product.productId}
-                          className="bg-white rounded-lg p-3 border border-blue-200"
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium text-gray-900">
-                              {product.productName}
-                            </span>
-                            <span className="text-sm text-gray-600">
-                              Allocated: {product.allocatedQuantity} units
-                            </span>
-                          </div>
-                          <input
-                            type="number"
-                            min="0"
-                            max={product.allocatedQuantity}
-                            value={
-                              currentProgress?.productProgress?.find(
-                                (p) => p.productId === product.productId
-                              )?.completedQuantity || 0
-                            }
-                            placeholder="Enter completed quantity"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            onChange={(e) => {
-                              const completed = parseInt(e.target.value) || 0;
+              {/* Batch-Based Stage Completion */}
+              {selectedBatch ? (
+                <div className="border border-purple-200 bg-purple-50 rounded-lg p-4">
+                  <h4 className="font-medium text-purple-900 mb-3 flex items-center space-x-2">
+                    <Package className="h-5 w-5" />
+                    <span>
+                      Complete {currentStageData?.label} Stage for Batch #
+                      {selectedBatch.batchNumber}
+                    </span>
+                  </h4>
 
-                              // Validate quantity
-                              if (completed > product.allocatedQuantity) {
-                                return;
-                              }
-
-                              // Update stage progress data
-                              setStageProgressData((prev) => {
-                                const updated = [...prev];
-                                const currentStage = updated[currentStageIndex];
-
-                                if (currentStage) {
-                                  // Update product progress
-                                  const productProgress =
-                                    currentStage.productProgress || [];
-                                  const existingIndex =
-                                    productProgress.findIndex(
-                                      (p) => p.productId === product.productId
-                                    );
-
-                                  if (existingIndex >= 0) {
-                                    productProgress[
-                                      existingIndex
-                                    ].completedQuantity = completed;
-                                  } else {
-                                    productProgress.push({
-                                      productId: product.productId,
-                                      productName: product.productName,
-                                      completedQuantity: completed,
-                                    });
-                                  }
-
-                                  currentStage.productProgress =
-                                    productProgress;
-
-                                  // Calculate total completed for this stage
-                                  const totalCompleted = productProgress.reduce(
-                                    (sum, p) => sum + p.completedQuantity,
-                                    0
-                                  );
-
-                                  currentStage.completedQuantity =
-                                    totalCompleted;
-                                  currentStage.remainingQuantity =
-                                    currentStage.allocatedQuantity -
-                                    totalCompleted;
-
-                                  // Update status and canMoveNext
-                                  if (
-                                    totalCompleted ===
-                                      currentStage.allocatedQuantity &&
-                                    totalCompleted > 0
-                                  ) {
-                                    currentStage.status = "completed";
-                                    currentStage.canMoveNext = true;
-                                  } else if (totalCompleted > 0) {
-                                    currentStage.status = "in_progress";
-                                    currentStage.canMoveNext = false;
-                                  } else {
-                                    currentStage.status = "pending";
-                                    currentStage.canMoveNext = false;
-                                  }
-                                }
-
-                                return updated;
-                              });
-                            }}
-                          />
-                        </div>
-                      ))}
+                  <div className="bg-white rounded-lg p-4 border border-purple-200 space-y-4">
+                    {/* Batch Info */}
+                    <div className="grid grid-cols-2 gap-4 pb-4 border-b border-gray-200">
+                      <div>
+                        <p className="text-sm text-gray-600">Batch Range</p>
+                        <p className="font-semibold text-gray-900">
+                          {formatRange(selectedBatch.range)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Total Quantity</p>
+                        <p className="font-semibold text-gray-900">
+                          {selectedBatch.quantity} units
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Product</p>
+                        <p className="font-semibold text-gray-900">
+                          {selectedBatch.productName}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Current Stage</p>
+                        <p className="font-semibold text-purple-700 capitalize">
+                          {selectedBatch.currentStage.replace(/_/g, " ")}
+                        </p>
+                      </div>
                     </div>
+
+                    {/* Quantity Input */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Completed Quantity for {currentStageData?.label}
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max={selectedBatch.quantity}
+                        value={batchCompletedQuantity}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value) || 0;
+                          if (value <= selectedBatch.quantity) {
+                            setBatchCompletedQuantity(value);
+                          }
+                        }}
+                        placeholder={`Enter quantity (0-${selectedBatch.quantity})`}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-lg font-semibold"
+                      />
+                      <p className="text-sm text-gray-600 mt-2">
+                        Enter the number of units completed for this stage. Must
+                        be {selectedBatch.quantity} to move to next stage.
+                      </p>
+                    </div>
+
+                    {/* Progress Indicator */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700">
+                          Completion Progress
+                        </span>
+                        <span className="text-sm font-semibold text-purple-700">
+                          {batchCompletedQuantity} / {selectedBatch.quantity} (
+                          {Math.round(
+                            (batchCompletedQuantity / selectedBatch.quantity) *
+                              100
+                          )}
+                          %)
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div
+                          className={`h-3 rounded-full transition-all duration-500 ${
+                            batchCompletedQuantity === selectedBatch.quantity
+                              ? "bg-green-500"
+                              : "bg-purple-500"
+                          }`}
+                          style={{
+                            width: `${
+                              (batchCompletedQuantity /
+                                selectedBatch.quantity) *
+                              100
+                            }%`,
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Completion Status */}
+                    {batchCompletedQuantity === selectedBatch.quantity ? (
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-start space-x-2">
+                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-semibold text-green-900">
+                            Stage 100% Complete!
+                          </p>
+                          <p className="text-xs text-green-700 mt-1">
+                            You can now move to the next stage.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start space-x-2">
+                        <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-semibold text-yellow-900">
+                            Complete all units to proceed
+                          </p>
+                          <p className="text-xs text-yellow-700 mt-1">
+                            Remaining:{" "}
+                            {selectedBatch.quantity - batchCompletedQuantity}{" "}
+                            units
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Button */}
+                    <button
+                      onClick={() =>
+                        handleBatchStageProgress(batchCompletedQuantity, true)
+                      }
+                      disabled={
+                        batchCompletedQuantity !== selectedBatch.quantity
+                      }
+                      className={`w-full py-3 px-4 rounded-lg font-semibold flex items-center justify-center space-x-2 transition-colors duration-200 ${
+                        batchCompletedQuantity === selectedBatch.quantity
+                          ? "bg-green-600 hover:bg-green-700 text-white cursor-pointer"
+                          : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      }`}
+                    >
+                      <CheckCircle className="h-5 w-5" />
+                      <span>
+                        Complete {currentStageData?.label} & Move to Next Stage
+                      </span>
+                    </button>
                   </div>
-                )}
+                </div>
+              ) : (
+                <div className="border border-gray-200 bg-gray-50 rounded-lg p-8 text-center">
+                  <Package className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-600 font-medium">
+                    Please select a batch to start production
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Select a batch from the purple section above
+                  </p>
+                </div>
+              )}
 
               {/* Assigned Team */}
               <div>
@@ -760,31 +1149,22 @@ const ProductionStageFlow: React.FC = () => {
                 />
               </div>
 
-              {/* Navigation Buttons */}
-              <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                <button
-                  disabled={true}
-                  className="px-6 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed flex items-center space-x-2"
-                  title="Backward navigation is disabled"
-                >
-                  <span>← Previous Stage</span>
-                </button>
-                <button
-                  onClick={handleNextStage}
-                  disabled={
-                    !canMoveToNextStage() ||
-                    currentStageIndex >= DEFAULT_PRODUCTION_STAGES.length - 1
-                  }
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center space-x-2 transition-colors"
-                >
-                  <span>Next Stage</span>
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
+              {/* Navigation Buttons REMOVED - Batch completion button handles stage progression */}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Batch Creation Modal */}
+      {showBatchModal && jobCardId && (
+        <React.Suspense fallback={<div>Loading...</div>}>
+          <BatchCreationModalRange
+            isOpen={showBatchModal}
+            onClose={() => setShowBatchModal(false)}
+            jobCardId={jobCardId}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
 };

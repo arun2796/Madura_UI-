@@ -1,149 +1,191 @@
 {
   "bindingAdvices": [
     {
-      "id": "d17c",
-      "clientName": "Government School",
-      "clientContact": "9876543210",
-      "clientEmail": "contact@govschool.edu",
-      "clientAddress": "123 Education Street, City",
-      "notebookSize": "A4 Crown",
-      "pages": 96,
-      "quantity": 2000,
-      "reams": 10,
-      "sheets": 5000,
-      "ratePerNotebook": 15,
-      "totalAmount": 30000,
-      "status": "approved",
-      "createdDate": "2025-09-25",
-      "createdBy": "admin",
-      "approvedDate": "2025-09-29",
-      "notes": "Bulk order for government school",
-      "lineItems": [
-        {
-          "id": "1",
-          "description": "CROWN IV LINE RULED",
-          "quantity": 1000,
-          "rate": 15,
-          "amount": 15000
-        },
-        {
-          "id": "2",
-          "description": "CROWN PLAIN NOTEBOOK",
-          "quantity": 1000,
-          "rate": 15,
-          "amount": 15000
-        }
-      ]
-    },
-    {
-      "id": "d252",
-      "clientName": "SRM College",
-      "clientContact": "9876543211",
-      "clientEmail": "contact@srmcollege.edu",
-      "clientAddress": "456 College Road, City",
-      "notebookSize": "A4 Crown",
-      "pages": 80,
-      "quantity": 1500,
-      "reams": 8,
-      "sheets": 4000,
-      "ratePerNotebook": 15,
-      "totalAmount": 22500,
-      "status": "approved",
-      "createdDate": "2025-09-28",
-      "createdBy": "admin",
-      "approvedDate": "2025-09-30",
-      "notes": "College bulk order",
-      "lineItems": [
-        {
-          "id": "1",
-          "description": "CROWN IV LINE RULED",
-          "quantity": 1500,
-          "rate": 15,
-          "amount": 22500
-        }
-      ]
-    },
-    {
-      "id": "7289",
-      "clientName": "ABC Private School",
-      "clientContact": "9876543210",
-      "clientEmail": "principal@abcschool.com",
-      "clientAddress": "123 Education Street, Chennai",
+      "id": "e309",
+      "clientName": "SRM college",
+      "clientContact": "1234567890",
+      "clientEmail": "mohan@gmail.com",
+      "clientAddress": "chennai",
       "notebookSize": "Mixed",
       "pages": 96,
-      "quantity": 1100,
-      "reams": 53,
-      "sheets": 26400,
+      "quantity": 1000,
+      "reams": 48,
+      "sheets": 24000,
       "ratePerNotebook": 15,
-      "totalAmount": 16500,
+      "totalAmount": 15000,
       "status": "approved",
-      "createdDate": "2025-09-30",
+      "createdDate": "2025-10-01",
       "createdBy": "admin",
-      "approvedDate": "2025-09-30",
+      "approvedDate": "2025-10-01",
       "notes": "",
       "lineItems": [
         {
-          "id": "item-1759239441957-1",
-          "description": "CROWN IV LINE RULED",
-          "quantity": 100,
-          "rate": 15,
-          "amount": 1500
-        },
-        {
-          "id": "item-1759239441957-2",
+          "id": "item-1759314180888-2",
           "description": "Imperial maths ruled",
           "quantity": 1000,
           "rate": 15,
-          "amount": 15000
+          "amount": 15000,
+          "availableQuantity": 900,
+          "allocatedQuantity": 100
         }
       ],
       "specifications": {},
-      "createdAt": "2025-09-30T13:37:43.039Z",
-      "updatedAt": "2025-09-30T13:37:43.039Z"
+      "createdAt": "2025-10-01T10:23:21.607Z",
+      "updatedAt": "2025-10-01T10:23:56.960Z"
     }
   ],
   "jobCards": [
     {
-      "id": "ca5c",
-      "bindingAdviceId": "d252",
-      "clientName": "SRM College",
-      "notebookSize": "CROWN IV LINE RULED - 80 Pages",
-      "quantity": 750,
-      "currentStage": "designing",
-      "progress": 0,
-      "startDate": "2025-09-30",
-      "estimatedCompletion": "2025-10-07",
+      "id": "9fdf",
+      "bindingAdviceId": "e309",
+      "clientName": "SRM college",
+      "notebookSize": "Imperial maths ruled - 96 Pages",
+      "quantity": 100,
+      "currentStage": "completed",
+      "progress": 100,
+      "startDate": "2025-10-01",
+      "estimatedCompletion": "2025-10-08",
       "assignedTo": "Production Team A",
-      "status": "active",
-      "createdAt": "2025-09-30T14:44:37.764Z",
-      "updatedAt": "2025-09-30T14:44:37.764Z",
-      "allocatedQuantity": 750,
+      "status": "completed",
+      "createdAt": "2025-10-01T10:23:56.932Z",
+      "updatedAt": "2025-10-01T10:29:18.139Z",
+      "allocatedQuantity": 100,
       "stageAllocatedQuantity": 0,
-      "remainingQuantity": 750,
-      "stageAllocations": [],
+      "remainingQuantity": 100,
+      "stageAllocations": [
+        {
+          "stageKey": "designing",
+          "stageName": "Design",
+          "allocatedQuantity": 100,
+          "completedQuantity": 0,
+          "remainingQuantity": 100,
+          "status": "in_progress",
+          "startDate": "2025-10-01",
+          "completedDate": null,
+          "canMoveNext": false,
+          "productProgress": []
+        },
+        {
+          "stageKey": "procurement",
+          "stageName": "Procurement",
+          "allocatedQuantity": 0,
+          "completedQuantity": 0,
+          "remainingQuantity": 0,
+          "status": "pending",
+          "startDate": null,
+          "completedDate": null,
+          "canMoveNext": false,
+          "productProgress": []
+        },
+        {
+          "stageKey": "printing",
+          "stageName": "Printing",
+          "allocatedQuantity": 0,
+          "completedQuantity": 0,
+          "remainingQuantity": 0,
+          "status": "pending",
+          "startDate": null,
+          "completedDate": null,
+          "canMoveNext": false,
+          "productProgress": []
+        },
+        {
+          "stageKey": "cutting",
+          "stageName": "Cutting & Binding",
+          "allocatedQuantity": 0,
+          "completedQuantity": 0,
+          "remainingQuantity": 0,
+          "status": "pending",
+          "startDate": null,
+          "completedDate": null,
+          "canMoveNext": false,
+          "productProgress": []
+        },
+        {
+          "stageKey": "binding",
+          "stageName": "Gathering & Binding",
+          "allocatedQuantity": 0,
+          "completedQuantity": 0,
+          "remainingQuantity": 0,
+          "status": "pending",
+          "startDate": null,
+          "completedDate": null,
+          "canMoveNext": false,
+          "productProgress": []
+        },
+        {
+          "stageKey": "quality_check",
+          "stageName": "Quality",
+          "allocatedQuantity": 0,
+          "completedQuantity": 0,
+          "remainingQuantity": 0,
+          "status": "pending",
+          "startDate": null,
+          "completedDate": null,
+          "canMoveNext": false,
+          "productProgress": []
+        },
+        {
+          "stageKey": "packing",
+          "stageName": "Packing",
+          "allocatedQuantity": 0,
+          "completedQuantity": 0,
+          "remainingQuantity": 0,
+          "status": "pending",
+          "startDate": null,
+          "completedDate": null,
+          "canMoveNext": false,
+          "productProgress": []
+        }
+      ],
       "stages": [
         {
           "name": "designing",
-          "status": "in_progress",
-          "startDate": "2025-09-30",
+          "status": "pending",
+          "startDate": "2025-10-01",
           "completedDate": null,
           "assignedTo": "Production Team A"
         }
       ],
       "materials": [
         {
-          "itemId": "MAT-d252-1",
-          "itemName": "CROWN IV LINE RULED Paper",
-          "requiredQuantity": 15,
-          "allocatedQuantity": 15,
+          "itemId": "MAT-e309-1",
+          "itemName": "Imperial maths ruled Paper",
+          "requiredQuantity": 10,
+          "allocatedQuantity": 10,
           "consumedQuantity": 0,
           "specifications": {
-            "description": "CROWN IV LINE RULED",
-            "quantity": 1500,
+            "description": "Imperial maths ruled",
+            "quantity": 1000,
             "rate": 15,
-            "amount": 22500,
+            "amount": 15000,
             "type": "paper"
           }
+        }
+      ],
+      "batches": [
+        {
+          "id": "9f9f",
+          "batchNumber": 1,
+          "originalQuantity": 50,
+          "currentStage": "design",
+          "status": "active",
+          "completedQuantity": 0,
+          "dispatchedQuantity": 0,
+          "availableForDispatch": 0,
+          "createdAt": "2025-10-01T10:24:16.306Z",
+          "completedAt": null
+        }
+      ],
+      "completedQuantity": 0,
+      "availableForDispatch": 0,
+      "completionDate": "2025-10-01T10:25:57.388Z",
+      "dispatchedQuantity": 50,
+      "dispatches": [
+        {
+          "dispatchId": "218b",
+          "dispatchedQuantity": 50,
+          "dispatchDate": "2025-10-01"
         }
       ]
     }
@@ -280,40 +322,168 @@
           "productionCost": 70
         }
       ]
+    },
+    {
+      "id": "098a",
+      "itemName": "CROWN IV LINE RULED",
+      "category": "finished_product",
+      "subcategory": "notebooks",
+      "currentStock": 375,
+      "availableQuantity": 375,
+      "minStockLevel": 100,
+      "maxStockLevel": 10000,
+      "reorderPoint": 500,
+      "unit": "pieces",
+      "location": "Finished Goods Warehouse",
+      "lastRestocked": "2025-09-30T20:47:25.601Z",
+      "createdAt": "2025-09-30T20:47:25.601Z",
+      "updatedAt": "2025-09-30T21:12:22.243Z"
+    },
+    {
+      "id": "7c5d",
+      "itemName": "Imperial maths ruled - 96 Pages",
+      "category": "finished_product",
+      "subcategory": "notebooks",
+      "currentStock": 2225,
+      "availableQuantity": 2225,
+      "reservedQuantity": 0,
+      "minStockLevel": 100,
+      "maxStockLevel": 10000,
+      "reorderPoint": 500,
+      "unit": "pieces",
+      "location": "Finished Goods Warehouse",
+      "specifications": {
+        "size": "Imperial",
+        "pages": 96,
+        "ruling": "Maths Ruled",
+        "binding": "Spiral",
+        "paperType": "70 GSM"
+      },
+      "sellingPrice": 15,
+      "productionCost": 12,
+      "lastRestocked": "2025-10-01T07:55:27.245Z",
+      "createdAt": "2025-10-01T07:55:27.245Z",
+      "updatedAt": "2025-10-01T09:35:38.963Z",
+      "reservationHistory": [],
+      "productionHistory": [],
+      "dispatchHistory": [],
+      "deliveryHistory": [
+        {
+          "date": "2025-10-01T09:35:38.963Z",
+          "quantity": 25,
+          "dispatchId": "b90f",
+          "clientName": "SRM college",
+          "type": "delivery"
+        }
+      ]
+    },
+    {
+      "id": "b5sheet",
+      "itemName": "B5 paper sheet",
+      "category": "finished_product",
+      "subcategory": "paper_sheets",
+      "currentStock": 14800,
+      "availableQuantity": 14800,
+      "reservedQuantity": 0,
+      "minStockLevel": 5000,
+      "maxStockLevel": 25000,
+      "reorderPoint": 7500,
+      "unit": "sheets",
+      "location": "Finished Goods Warehouse",
+      "specifications": {
+        "size": "B5",
+        "weight": "70 GSM",
+        "color": "White",
+        "type": "Plain"
+      },
+      "sellingPrice": 2,
+      "productionCost": 1.5,
+      "lastRestocked": "2025-10-01T00:00:00.000Z",
+      "createdAt": "2025-10-01T00:00:00.000Z",
+      "updatedAt": "2025-10-01T00:00:00.000Z",
+      "reservationHistory": [],
+      "productionHistory": [],
+      "dispatchHistory": [],
+      "deliveryHistory": []
+    },
+    {
+      "id": "533d",
+      "itemName": "Unknown Product",
+      "category": "finished_product",
+      "subcategory": "notebooks",
+      "currentStock": 0,
+      "availableQuantity": 0,
+      "minStockLevel": 100,
+      "maxStockLevel": 10000,
+      "reorderPoint": 500,
+      "unit": "pieces",
+      "location": "Finished Goods Warehouse",
+      "lastRestocked": "2025-10-01T10:25:29.087Z",
+      "createdAt": "2025-10-01T10:25:29.087Z",
+      "updatedAt": "2025-10-01T10:35:28.472Z",
+      "deliveryHistory": [
+        {
+          "date": "2025-10-01T10:31:44.512Z",
+          "quantity": 50,
+          "dispatchId": "218b",
+          "clientName": "SRM college",
+          "type": "delivery"
+        },
+        {
+          "date": "2025-10-01T10:35:28.472Z",
+          "quantity": 50,
+          "dispatchId": "218b",
+          "clientName": "SRM college",
+          "type": "delivery"
+        }
+      ]
     }
   ],
   "dispatches": [
     {
-      "id": "a693",
-      "jobCardId": null,
-      "clientName": "govind",
+      "id": "218b",
+      "jobCardId": "9fdf",
+      "batchId": "9f9f",
+      "clientName": "SRM college",
       "deliveryLocation": "",
       "deliveryAddress": "",
-      "quantity": 3,
-      "notebookSize": "Mixed Products (2 items)",
-      "scheduledDate": "2025-09-30",
+      "quantity": 50,
+      "notebookSize": "Unknown Product",
+      "scheduledDate": "2025-10-01",
       "status": "delivered",
       "transporter": "FastTrack Logistics",
       "transporterContact": "9876543230",
-      "vehicleNumber": "1234",
-      "driverName": "govind",
-      "driverContact": "govind",
+      "vehicleNumber": "tm-60br-5678",
+      "driverName": "1234567890",
+      "driverContact": "ravi",
       "estimatedDelivery": "2025-10-01",
-      "actualDelivery": "2025-09-30",
-      "totalCartons": 1,
-      "deliveryValue": 45,
-      "challanNumber": "CH-2025-780",
+      "actualDelivery": "2025-10-01",
+      "totalCartons": 3,
+      "deliveryValue": 750,
+      "challanNumber": "CH-2025-662",
       "notes": "",
       "multipleLocations": [
         {
           "locationId": "LOC-001",
-          "locationName": "govind",
-          "address": "govind",
-          "contactPerson": "govind",
-          "contactNumber": "govind",
-          "quantity": 3,
+          "locationName": "chennai",
+          "address": "chennai",
+          "contactPerson": "ravi",
+          "contactNumber": "1234567890",
+          "quantity": 30,
+          "cartons": 2,
+          "deliveryInstructions": "",
+          "deliveryTime": "10:00",
+          "status": "delivered"
+        },
+        {
+          "locationId": "LOC-002",
+          "locationName": "salem",
+          "address": "salem",
+          "contactPerson": "1234567890",
+          "contactNumber": "1234567890",
+          "quantity": 20,
           "cartons": 1,
-          "deliveryInstructions": "govind",
+          "deliveryInstructions": "",
           "deliveryTime": "10:00",
           "status": "delivered"
         }
@@ -321,109 +491,29 @@
       "items": [
         {
           "itemId": "1",
-          "itemName": "Mixed Products (2 items)",
-          "quantity": 3
+          "itemName": "Unknown Product",
+          "quantity": 50
         }
       ],
-      "dispatchDate": "2025-09-30",
-      "createdAt": "2025-09-30T12:31:15.128Z",
-      "updatedAt": "2025-09-30T12:31:15.128Z"
-    },
-    {
-      "id": "44e0",
-      "jobCardId": null,
-      "clientName": "Arunkumar P",
-      "deliveryLocation": "",
-      "deliveryAddress": "",
-      "quantity": 9,
-      "notebookSize": "Mixed Products (2 items)",
-      "scheduledDate": "2025-09-30",
-      "status": "scheduled",
-      "transporter": "FastTrack Logistics",
-      "transporterContact": "9876543230",
-      "vehicleNumber": "qwerty45",
-      "driverName": "qwertyui",
-      "driverContact": "123456789",
-      "estimatedDelivery": "2025-10-01",
-      "actualDelivery": null,
-      "totalCartons": 1,
-      "deliveryValue": 135,
-      "challanNumber": "CH-2025-922",
-      "notes": "",
-      "multipleLocations": [
-        {
-          "locationId": "LOC-001",
-          "locationName": "sdfghj",
-          "address": "asdfghj",
-          "contactPerson": "zxcvbn",
-          "contactNumber": "45678",
-          "quantity": 9,
-          "cartons": 1,
-          "deliveryInstructions": "",
-          "deliveryTime": "10:00",
-          "status": "pending"
-        }
-      ],
-      "items": [
-        {
-          "itemId": "1",
-          "itemName": "Mixed Products (2 items)",
-          "quantity": 9
-        }
-      ],
-      "dispatchDate": "2025-09-30",
-      "createdAt": "2025-09-30T13:20:45.579Z",
-      "updatedAt": "2025-09-30T13:20:45.579Z"
+      "dispatchDate": "2025-10-01",
+      "createdAt": "2025-10-01T10:29:18.123Z",
+      "updatedAt": "2025-10-01T10:29:18.123Z"
     }
   ],
   "invoices": [
     {
-      "status": "paid",
-      "paymentDate": "2025-09-30",
-      "paymentMethod": "Bank Transfer",
-      "paymentReference": "1234567",
-      "id": "ddb4"
-    },
-    {
-      "status": "paid",
-      "paymentDate": "2025-09-30",
-      "paymentMethod": "Bank Transfer",
-      "paymentReference": "1235",
-      "id": "b31e"
-    },
-    {
-      "status": "paid",
-      "paymentDate": "2025-09-29",
-      "paymentMethod": "Bank Transfer",
-      "paymentReference": "qwrt12345",
-      "id": "9b18"
-    },
-    {
-      "status": "paid",
-      "paymentDate": "2025-09-29",
-      "paymentMethod": "Bank Transfer",
-      "id": "0582"
-    },
-    {
-      "status": "paid",
-      "paymentDate": "2025-09-30",
-      "paymentMethod": "Bank Transfer",
-      "paymentReference": "123456789",
-      "id": "348f"
-    },
-    {
-      "id": "efa5",
+      "id": "63c6",
       "clientName": "Government School",
       "clientContact": "9876543210",
       "clientEmail": "contact@govschool.edu",
       "clientAddress": "123 Education Street, City",
       "bindingAdviceId": "d17c",
-      "jobCardId": null,
+      "jobCardId": "3ae3",
       "amount": 30600,
       "taxAmount": 5508,
       "totalAmount": 36108,
-      "invoiceDate": "2025-09-30",
-      "dueDate": "2025-10-30",
+      "invoiceDate": "2025-10-01",
+      "dueDate": "2025-10-31",
       "status": "sent",
       "items": [
         {
@@ -448,32 +538,151 @@
           "amount": 600
         }
       ],
-      "notes": "Invoice generated from Job Card 35b3 - Production completed with 2000 units produced. Generated on 9/30/2025.",
-      "paymentTerms": "Net 30 days",
-      "createdAt": "2025-09-30T05:32:41.879Z",
-      "updatedAt": "2025-09-30T05:32:41.879Z"
+      "notes": "Invoice generated from Job Card 3ae3 - Production completed with 2000 units produced. Generated on 10/1/2025.",
+      "paymentTerms": "Net 30 days"
+    },
+    {
+      "id": "5cda",
+      "type": "binding_advice",
+      "clientId": "e309",
+      "bindingAdviceId": "e309",
+      "clientName": "SRM college",
+      "clientContact": "1234567890",
+      "clientEmail": "mohan@gmail.com",
+      "clientAddress": "chennai",
+      "amount": 15000,
+      "taxAmount": 2700,
+      "totalAmount": 17700,
+      "invoiceDate": "2025-10-01",
+      "dueDate": "2025-10-09",
+      "status": "sent",
+      "paymentDate": null,
+      "paymentMethod": null,
+      "paymentReference": null,
+      "items": [
+        {
+          "itemId": "1",
+          "itemName": "Imperial maths ruled - 96 Pages",
+          "description": "Imperial maths ruled - 96 Pages",
+          "quantity": 1000,
+          "rate": 15,
+          "amount": 15000
+        }
+      ],
+      "notes": "",
+      "createdAt": "2025-10-01T10:30:01.595Z",
+      "updatedAt": "2025-10-01T10:30:01.595Z"
+    },
+    {
+      "id": "ba2b",
+      "type": "jobcard_complete",
+      "clientId": "e309",
+      "jobCardId": "9fdf",
+      "clientName": "SRM college",
+      "clientContact": "1234567890",
+      "clientEmail": "mohan@gmail.com",
+      "clientAddress": "chennai",
+      "amount": 1800,
+      "taxAmount": 324,
+      "totalAmount": 2124,
+      "invoiceDate": "2025-10-01",
+      "dueDate": "2025-10-17",
+      "status": "sent",
+      "paymentDate": null,
+      "paymentMethod": null,
+      "paymentReference": null,
+      "items": [
+        {
+          "itemId": "1",
+          "itemName": "Imperial maths ruled - 96 Pages",
+          "description": "Imperial maths ruled - 96 Pages",
+          "quantity": 100,
+          "rate": 15,
+          "amount": 1500
+        },
+        {
+          "itemId": "2",
+          "itemName": "Production Completion Bonus (2%)",
+          "description": "Production Completion Bonus (2%)",
+          "quantity": 1,
+          "rate": 300,
+          "amount": 300
+        }
+      ],
+      "notes": "",
+      "createdAt": "2025-10-01T10:30:36.784Z",
+      "updatedAt": "2025-10-01T10:30:36.784Z"
+    },
+    {
+      "id": "df7b",
+      "type": "dispatch_based",
+      "clientId": "6e2d",
+      "dispatchId": null,
+      "clientName": "SRM college",
+      "clientContact": "",
+      "clientEmail": "",
+      "clientAddress": "chennai",
+      "amount": 1500,
+      "taxAmount": 270,
+      "totalAmount": 1770,
+      "invoiceDate": "2025-10-01",
+      "dueDate": "2025-10-31",
+      "status": "sent",
+      "paymentDate": null,
+      "paymentMethod": null,
+      "paymentReference": null,
+      "items": [
+        {
+          "itemId": "1",
+          "itemName": "Imperial maths ruled - 96 Pages Notebooks",
+          "description": "Imperial maths ruled - 96 Pages Notebooks",
+          "quantity": 100,
+          "rate": 15,
+          "amount": 1500
+        }
+      ],
+      "notes": "",
+      "createdAt": "2025-10-01T10:31:16.349Z",
+      "updatedAt": "2025-10-01T10:31:16.349Z"
+    },
+    {
+      "id": "69d0",
+      "type": "dispatch_based",
+      "clientId": "218b",
+      "dispatchId": "218b",
+      "clientName": "SRM college",
+      "clientContact": "",
+      "clientEmail": "",
+      "clientAddress": "chennai",
+      "amount": 750,
+      "taxAmount": 135,
+      "totalAmount": 885,
+      "invoiceDate": "2025-10-01",
+      "dueDate": "2025-10-31",
+      "status": "paid",
+      "paymentDate": "2025-10-01",
+      "paymentMethod": "Bank Transfer",
+      "paymentReference": "qwert123",
+      "items": [
+        {
+          "itemId": "1",
+          "itemName": "Unknown Product Notebooks",
+          "description": "Unknown Product Notebooks",
+          "quantity": 50,
+          "rate": 15,
+          "amount": 750
+        }
+      ],
+      "notes": "",
+      "createdAt": "2025-10-01T10:37:13.077Z",
+      "updatedAt": "2025-10-01T10:37:13.077Z"
     }
   ],
   "clients": [
     {
-      "id": "test123",
-      "name": "ABC Private School",
-      "type": "school",
-      "contactPerson": "Principal Smith",
-      "phone": "9876543210",
-      "email": "principal@abcschool.com",
-      "address": "123 Education Street, Chennai",
-      "gstNumber": "33ABCDE1234F1Z5",
-      "paymentTerms": "30 days",
-      "creditLimit": 50000,
-      "status": "approved",
-      "approvedDate": "2024-02-20",
-      "approvedBy": "Manager"
-    },
-    {
-      "id": "ca71",
+      "id": "298f",
       "name": "SRM college",
-      "type": "school",
+      "type": "university",
       "contactPerson": "mohan",
       "phone": "1234567890",
       "email": "mohan@gmail.com",
@@ -744,5 +953,520 @@
       "updatedAt": "2025-09-29T09:58:29.399Z"
     }
   ],
-  "productionPlans": []
+  "productionPlans": [],
+  "productionBatches": [
+    {
+      "id": "batch_001",
+      "jobCardId": null,
+      "batchNumber": 1,
+      "range": {
+        "from": 1,
+        "to": 125
+      },
+      "quantity": 125,
+      "productId": "prod_crown_iv",
+      "productName": "CROWN IV LINE RULED",
+      "currentStage": "completed",
+      "currentStageIndex": 6,
+      "status": "completed",
+      "stageAssignments": {
+        "design": {
+          "teamId": "team_design",
+          "teamName": "Design Team",
+          "startedAt": "2025-09-30T10:00:00Z",
+          "completedAt": null
+        },
+        "designing": {
+          "completedAt": "2025-09-30T20:46:02.362Z"
+        },
+        "procurement": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-09-30T20:46:02.362Z",
+          "completedAt": "2025-09-30T20:46:33.960Z"
+        },
+        "printing": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-09-30T20:46:33.960Z",
+          "completedAt": "2025-09-30T20:46:44.219Z"
+        },
+        "cutting": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-09-30T20:46:44.219Z",
+          "completedAt": "2025-09-30T20:46:55.103Z"
+        },
+        "binding": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-09-30T20:46:55.103Z",
+          "completedAt": "2025-09-30T20:47:01.900Z"
+        },
+        "quality_check": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-09-30T20:47:01.900Z",
+          "completedAt": "2025-09-30T20:47:09.068Z"
+        },
+        "packing": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-09-30T20:47:09.068Z",
+          "completedAt": "2025-09-30T20:47:53.465Z"
+        }
+      },
+      "completed": true,
+      "dispatchedQuantity": 0,
+      "availableForDispatch": 125,
+      "notes": "First batch for SRM College order",
+      "createdAt": "2025-09-30T10:00:00Z",
+      "createdBy": "admin",
+      "updatedAt": "2025-09-30T20:47:53.465Z",
+      "completedAt": "2025-09-30T20:47:53.465Z"
+    },
+    {
+      "id": "batch_002",
+      "jobCardId": null,
+      "batchNumber": 2,
+      "range": {
+        "from": 126,
+        "to": 250
+      },
+      "quantity": 125,
+      "productId": "prod_crown_iv",
+      "productName": "CROWN IV LINE RULED",
+      "currentStage": "completed",
+      "currentStageIndex": 6,
+      "status": "completed",
+      "stageAssignments": {
+        "design": {
+          "teamId": "team_design",
+          "teamName": "Design Team",
+          "startedAt": "2025-09-30T11:00:00Z",
+          "completedAt": null
+        },
+        "designing": {
+          "completedAt": "2025-09-30T21:01:20.487Z"
+        },
+        "procurement": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-09-30T21:01:20.487Z",
+          "completedAt": "2025-09-30T21:10:19.153Z"
+        },
+        "printing": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-09-30T21:10:19.153Z",
+          "completedAt": "2025-09-30T21:10:32.653Z"
+        },
+        "cutting": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-09-30T21:10:32.653Z",
+          "completedAt": "2025-09-30T21:10:47.814Z"
+        },
+        "binding": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-09-30T21:10:47.814Z",
+          "completedAt": "2025-09-30T21:11:47.411Z"
+        },
+        "quality_check": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-09-30T21:11:47.411Z",
+          "completedAt": "2025-09-30T21:12:00.234Z"
+        },
+        "packing": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-09-30T21:12:00.234Z",
+          "completedAt": "2025-09-30T21:12:22.164Z"
+        }
+      },
+      "completed": true,
+      "dispatchedQuantity": 0,
+      "availableForDispatch": 125,
+      "notes": "Second batch for SRM College order",
+      "createdAt": "2025-09-30T11:00:00Z",
+      "createdBy": "admin",
+      "updatedAt": "2025-09-30T21:12:22.164Z",
+      "completedAt": "2025-09-30T21:12:22.164Z"
+    },
+    {
+      "id": "a17b",
+      "jobCardId": null,
+      "batchNumber": 1,
+      "range": {
+        "from": 1,
+        "to": 250
+      },
+      "quantity": 250,
+      "productId": "unknown",
+      "productName": "Unknown Product",
+      "currentStage": "design",
+      "currentStageIndex": 0,
+      "status": "active",
+      "stageAssignments": {
+        "design": {
+          "teamId": "team_design",
+          "teamName": "Design Team",
+          "startedAt": "2025-09-30T20:50:07.320Z",
+          "completedAt": null
+        }
+      },
+      "completed": false,
+      "dispatchedQuantity": 0,
+      "availableForDispatch": 0,
+      "notes": "",
+      "createdAt": "2025-09-30T20:50:07.320Z",
+      "createdBy": "admin",
+      "updatedAt": "2025-09-30T20:50:07.320Z",
+      "completedAt": null
+    },
+    {
+      "id": "d800",
+      "jobCardId": null,
+      "batchNumber": 1,
+      "range": {
+        "from": 1,
+        "to": 100
+      },
+      "quantity": 100,
+      "productId": "unknown",
+      "productName": "Unknown Product",
+      "currentStage": "completed",
+      "currentStageIndex": 6,
+      "status": "completed",
+      "stageAssignments": {
+        "design": {
+          "teamId": "team_design",
+          "teamName": "Design Team",
+          "startedAt": "2025-10-01T07:52:05.711Z",
+          "completedAt": null
+        },
+        "designing": {
+          "completedAt": "2025-10-01T07:54:45.545Z"
+        },
+        "procurement": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T07:54:45.546Z",
+          "completedAt": "2025-10-01T07:54:52.751Z"
+        },
+        "printing": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T07:54:52.751Z",
+          "completedAt": "2025-10-01T07:54:59.281Z"
+        },
+        "cutting": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T07:54:59.281Z",
+          "completedAt": "2025-10-01T07:55:05.682Z"
+        },
+        "binding": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T07:55:05.682Z",
+          "completedAt": "2025-10-01T07:55:13.215Z"
+        },
+        "quality_check": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T07:55:13.215Z",
+          "completedAt": "2025-10-01T07:55:19.118Z"
+        },
+        "packing": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T07:55:19.118Z",
+          "completedAt": "2025-10-01T07:55:26.972Z"
+        }
+      },
+      "completed": true,
+      "dispatchedQuantity": 0,
+      "availableForDispatch": 100,
+      "notes": "",
+      "createdAt": "2025-10-01T07:52:05.711Z",
+      "createdBy": "admin",
+      "updatedAt": "2025-10-01T07:55:26.972Z",
+      "completedAt": "2025-10-01T07:55:26.972Z"
+    },
+    {
+      "id": "82a9",
+      "jobCardId": null,
+      "batchNumber": 1,
+      "range": {
+        "from": 1,
+        "to": 150
+      },
+      "quantity": 150,
+      "productId": "unknown",
+      "productName": "Unknown Product",
+      "currentStage": "design",
+      "currentStageIndex": 0,
+      "status": "active",
+      "stageAssignments": {
+        "design": {
+          "teamId": "team_design",
+          "teamName": "Design Team",
+          "startedAt": "2025-10-01T08:21:17.270Z",
+          "completedAt": null
+        }
+      },
+      "completed": false,
+      "dispatchedQuantity": 0,
+      "availableForDispatch": 0,
+      "notes": "",
+      "createdAt": "2025-10-01T08:21:17.270Z",
+      "createdBy": "admin",
+      "updatedAt": "2025-10-01T08:21:17.270Z",
+      "completedAt": null
+    },
+    {
+      "id": "dffc",
+      "jobCardId": null,
+      "batchNumber": 1,
+      "range": {
+        "from": 1,
+        "to": 100
+      },
+      "quantity": 100,
+      "productId": "unknown",
+      "productName": "Unknown Product",
+      "currentStage": "completed",
+      "currentStageIndex": 6,
+      "status": "completed",
+      "stageAssignments": {
+        "design": {
+          "teamId": "team_design",
+          "teamName": "Design Team",
+          "startedAt": "2025-10-01T08:35:39.655Z",
+          "completedAt": null
+        },
+        "designing": {
+          "completedAt": "2025-10-01T08:37:01.358Z"
+        },
+        "procurement": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T08:37:01.358Z",
+          "completedAt": "2025-10-01T08:37:07.423Z"
+        },
+        "printing": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T08:37:07.423Z",
+          "completedAt": "2025-10-01T08:37:18.391Z"
+        },
+        "cutting": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T08:37:18.391Z",
+          "completedAt": "2025-10-01T08:37:25.155Z"
+        },
+        "binding": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T08:37:25.155Z",
+          "completedAt": "2025-10-01T08:37:36.504Z"
+        },
+        "quality_check": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T08:37:36.504Z",
+          "completedAt": "2025-10-01T08:37:43.827Z"
+        },
+        "packing": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T08:37:43.827Z",
+          "completedAt": "2025-10-01T08:37:51.153Z"
+        }
+      },
+      "completed": true,
+      "dispatchedQuantity": 0,
+      "availableForDispatch": 100,
+      "notes": "",
+      "createdAt": "2025-10-01T08:35:39.655Z",
+      "createdBy": "admin",
+      "updatedAt": "2025-10-01T08:37:51.153Z",
+      "completedAt": "2025-10-01T08:37:51.153Z"
+    },
+    {
+      "id": "7f1f",
+      "jobCardId": null,
+      "batchNumber": 2,
+      "range": {
+        "from": 101,
+        "to": 125
+      },
+      "quantity": 25,
+      "productId": "unknown",
+      "productName": "Unknown Product",
+      "currentStage": "completed",
+      "currentStageIndex": 6,
+      "status": "completed",
+      "stageAssignments": {
+        "design": {
+          "teamId": "team_design",
+          "teamName": "Design Team",
+          "startedAt": "2025-10-01T09:29:32.078Z",
+          "completedAt": null
+        },
+        "designing": {
+          "completedAt": "2025-10-01T09:29:48.890Z"
+        },
+        "procurement": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T09:29:48.890Z",
+          "completedAt": "2025-10-01T09:30:00.907Z"
+        },
+        "printing": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T09:30:00.908Z",
+          "completedAt": "2025-10-01T09:30:10.220Z"
+        },
+        "cutting": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T09:30:10.220Z",
+          "completedAt": "2025-10-01T09:30:19.154Z"
+        },
+        "binding": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T09:30:19.155Z",
+          "completedAt": "2025-10-01T09:30:28.170Z"
+        },
+        "quality_check": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T09:30:28.170Z",
+          "completedAt": "2025-10-01T09:30:37.248Z"
+        },
+        "packing": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T09:30:37.248Z",
+          "completedAt": "2025-10-01T09:30:53.232Z"
+        }
+      },
+      "completed": true,
+      "dispatchedQuantity": 0,
+      "availableForDispatch": 25,
+      "notes": "",
+      "createdAt": "2025-10-01T09:29:32.078Z",
+      "createdBy": "admin",
+      "updatedAt": "2025-10-01T09:30:53.232Z",
+      "completedAt": "2025-10-01T09:30:53.232Z"
+    },
+    {
+      "id": "9f9f",
+      "jobCardId": "9fdf",
+      "batchNumber": 1,
+      "range": {
+        "from": 1,
+        "to": 50
+      },
+      "quantity": 50,
+      "productId": "unknown",
+      "productName": "Unknown Product",
+      "currentStage": "completed",
+      "currentStageIndex": 6,
+      "status": "completed",
+      "stageAssignments": {
+        "design": {
+          "teamId": "team_design",
+          "teamName": "Design Team",
+          "startedAt": "2025-10-01T10:24:16.273Z",
+          "completedAt": null
+        },
+        "designing": {
+          "completedAt": "2025-10-01T10:24:41.982Z"
+        },
+        "procurement": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T10:24:41.982Z",
+          "completedAt": "2025-10-01T10:24:50.356Z"
+        },
+        "printing": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T10:24:50.356Z",
+          "completedAt": "2025-10-01T10:24:56.839Z"
+        },
+        "cutting": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T10:24:56.839Z",
+          "completedAt": "2025-10-01T10:25:03.877Z"
+        },
+        "binding": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T10:25:03.877Z",
+          "completedAt": "2025-10-01T10:25:10.959Z"
+        },
+        "quality_check": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T10:25:10.959Z",
+          "completedAt": "2025-10-01T10:25:19.841Z"
+        },
+        "packing": {
+          "teamId": "Production Team A",
+          "teamName": "Production Team A",
+          "startedAt": "2025-10-01T10:25:19.841Z",
+          "completedAt": "2025-10-01T10:25:28.893Z"
+        }
+      },
+      "completed": true,
+      "dispatchedQuantity": 0,
+      "availableForDispatch": 50,
+      "notes": "",
+      "createdAt": "2025-10-01T10:24:16.273Z",
+      "createdBy": "admin",
+      "updatedAt": "2025-10-01T10:25:28.893Z",
+      "completedAt": "2025-10-01T10:25:28.893Z"
+    },
+    {
+      "id": "9ca9",
+      "jobCardId": "9fdf",
+      "batchNumber": 2,
+      "range": {
+        "from": 51,
+        "to": 100
+      },
+      "quantity": 50,
+      "productId": "unknown",
+      "productName": "Unknown Product",
+      "currentStage": "design",
+      "currentStageIndex": 0,
+      "status": "active",
+      "stageAssignments": {
+        "design": {
+          "teamId": "team_design",
+          "teamName": "Design Team",
+          "startedAt": "2025-10-01T10:24:28.880Z",
+          "completedAt": null
+        }
+      },
+      "completed": false,
+      "dispatchedQuantity": 0,
+      "availableForDispatch": 0,
+      "notes": "",
+      "createdAt": "2025-10-01T10:24:28.880Z",
+      "createdBy": "admin",
+      "updatedAt": "2025-10-01T10:24:28.880Z",
+      "completedAt": null
+    }
+  ]
 }

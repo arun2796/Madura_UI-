@@ -1,14 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { X, Calendar, Users, Package } from "lucide-react";
+import {
+  X,
+  Calendar,
+  Users,
+  Package,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import {
   useBindingAdvices,
   useCreateJobCard,
   useUpdateJobCard,
   useJobCards,
+  useClients,
+  useClient,
+  useUpdateClient,
 } from "../../hooks/useApiQueries";
 import { JobCard } from "../../services/api";
 import QuantitySelector from "../QuantitySelector";
 import QuantityAllocationDisplay from "../QuantityAllocationDisplay";
+import FinishedProductsTable from "../tables/FinishedProductsTable";
+import { useInventoryItems } from "../../hooks/useApiQueries";
 
 interface JobCardFormProps {
   isOpen: boolean;
@@ -23,8 +35,11 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
 }) => {
   const { data: bindingAdvices = [] } = useBindingAdvices();
   const { data: allJobCards = [] } = useJobCards();
+  const { data: clients = [] } = useClients();
+  const { data: inventoryItems = [] } = useInventoryItems();
   const createJobCardMutation = useCreateJobCard();
   const updateJobCardMutation = useUpdateJobCard();
+  const updateClientMutation = useUpdateClient();
 
   const [formData, setFormData] = useState({
     bindingAdviceId: "",
@@ -39,9 +54,11 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
   const [selectedQuantity, setSelectedQuantity] = useState<number>(0);
   const [availableQuantity, setAvailableQuantity] = useState<number>(0);
   const [selectedBindingAdvice, setSelectedBindingAdvice] = useState<any>(null);
+  const [selectedClient, setSelectedClient] = useState<any>(null);
   const [productQuantities, setProductQuantities] = useState<
     Record<string, number>
   >({});
+  const [availabilityError, setAvailabilityError] = useState<string>("");
 
   const productionTeams = [
     "Production Team A",
@@ -53,6 +70,31 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
     "Quality Team",
     "Packing Team",
   ];
+
+  // Helper function to match finished products
+  const getFinishedProduct = (description: string, pages: number) => {
+    return inventoryItems.find(
+      (item) =>
+        item.category === "finished_product" &&
+        (item.itemName.toLowerCase().includes(description.toLowerCase()) ||
+          description.toLowerCase().includes(item.itemName.toLowerCase())) &&
+        (item.specifications?.pages === pages || !item.specifications?.pages)
+    );
+  };
+
+  // Get finished products for display
+  const finishedProducts = inventoryItems.filter(
+    (item) => item.category === "finished_product"
+  );
+
+  // Convert binding advice line items to the format expected by the table
+  const lineItems =
+    selectedBindingAdvice?.lineItems?.map((item: any) => ({
+      id: item.id,
+      description: item.description,
+      pages: item.pages,
+      quantity: productQuantities[item.id] || 0,
+    })) || [];
 
   // Get approved binding advices that don't have job cards yet
   const availableBindingAdvices = bindingAdvices.filter(
@@ -142,6 +184,10 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
       // Store selected binding advice
       setSelectedBindingAdvice(selectedAdvice);
 
+      // Find client by name
+      const client = clients.find((c) => c.name === selectedAdvice.clientName);
+      setSelectedClient(client);
+
       // Initialize product quantities to 0
       const initialQuantities: Record<string, number> = {};
       selectedAdvice.lineItems?.forEach((item) => {
@@ -151,6 +197,7 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
 
       setAvailableQuantity(remainingQuantity);
       setSelectedQuantity(0);
+      setAvailabilityError("");
 
       console.log("Binding Advice Selected:", {
         id: selectedAdvice.id,
@@ -158,6 +205,7 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
         allocatedToJobCards,
         remainingQuantity,
         lineItems: selectedAdvice.lineItems,
+        client,
       });
     }
   };
@@ -241,9 +289,79 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
         }
       );
     } else {
+      // Validate binding advice availability before creating job card
+      if (selectedBindingAdvice && selectedBindingAdvice.lineItems) {
+        let hasAvailabilityIssue = false;
+
+        selectedBindingAdvice.lineItems.forEach((item: any) => {
+          const requestedQty = productQuantities[item.id] || 0;
+          const availableQty = item.availableQuantity || item.quantity;
+
+          if (requestedQty > availableQty) {
+            hasAvailabilityIssue = true;
+            setAvailabilityError(
+              `Insufficient availability for ${item.description}. Available: ${availableQty}, Requested: ${requestedQty}`
+            );
+          }
+        });
+
+        if (hasAvailabilityIssue) {
+          alert(
+            "Cannot create job card: Insufficient product availability in binding advice"
+          );
+          return;
+        }
+      }
+
       // Create new job card using React Query mutation
       createJobCardMutation.mutate(jobCardData, {
-        onSuccess: () => {
+        onSuccess: async (newJobCard) => {
+          // Update binding advice line items with allocated quantities
+          if (selectedBindingAdvice && selectedBindingAdvice.lineItems) {
+            const updatedLineItems = selectedBindingAdvice.lineItems.map(
+              (item: any) => {
+                const allocatedQty = productQuantities[item.id] || 0;
+
+                if (allocatedQty > 0) {
+                  return {
+                    ...item,
+                    availableQuantity:
+                      (item.availableQuantity || item.quantity) - allocatedQty,
+                    allocatedQuantity:
+                      (item.allocatedQuantity || 0) + allocatedQty,
+                  };
+                }
+                return {
+                  ...item,
+                  availableQuantity: item.availableQuantity || item.quantity,
+                  allocatedQuantity: item.allocatedQuantity || 0,
+                };
+              }
+            );
+
+            // Update binding advice with new availability
+            try {
+              await fetch(
+                `http://localhost:3002/bindingAdvices/${selectedBindingAdvice.id}`,
+                {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    ...selectedBindingAdvice,
+                    lineItems: updatedLineItems,
+                    updatedAt: new Date().toISOString(),
+                  }),
+                }
+              );
+              console.log("Binding advice availability updated successfully");
+            } catch (error) {
+              console.error(
+                "Failed to update binding advice availability:",
+                error
+              );
+            }
+          }
+
           onClose();
         },
         onError: (error) => {
@@ -329,12 +447,22 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
                   <div className="space-y-4">
                     {selectedBindingAdvice.lineItems.map(
                       (item: any, index: number) => {
-                        // Calculate available quantity for this product
+                        // Calculate available quantity for this product from binding advice
                         const productTotalQty = item.quantity || 0;
+                        const productAllocated = item.allocatedQuantity || 0;
+                        const productAvailable =
+                          (item.availableQuantity || productTotalQty) -
+                          productAllocated;
 
-                        // Calculate already allocated to other job cards for this product
-                        // (In a real scenario, you'd track this per product)
-                        const productAvailable = productTotalQty;
+                        // Find client product availability (for display only)
+                        const clientProduct = selectedClient?.products?.find(
+                          (p: any) => p.productName === item.description
+                        );
+                        const clientAvailable =
+                          clientProduct?.availableQuantity || 0;
+                        const clientReserved =
+                          clientProduct?.reservedQuantity || 0;
+                        const clientTotal = clientProduct?.totalOrdered || 0;
 
                         return (
                           <div
@@ -345,12 +473,50 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
                               <h4 className="font-semibold text-gray-900">
                                 Product {index + 1}: {item.description}
                               </h4>
-                              <div className="text-sm text-gray-600 mt-1">
-                                <span className="font-medium">
-                                  Total Available:
-                                </span>{" "}
-                                {productAvailable} units
+                              <div className="grid grid-cols-2 gap-2 text-sm mt-2">
+                                <div className="text-gray-600">
+                                  <span className="font-medium">
+                                    Binding Advice:
+                                  </span>{" "}
+                                  {productAvailable} units
+                                </div>
+                                {clientProduct && (
+                                  <>
+                                    <div className="text-green-600">
+                                      <span className="font-medium flex items-center">
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Client Available:
+                                      </span>{" "}
+                                      {clientAvailable} units
+                                    </div>
+                                    <div className="text-orange-600">
+                                      <span className="font-medium">
+                                        Reserved:
+                                      </span>{" "}
+                                      {clientReserved} units
+                                    </div>
+                                    <div className="text-blue-600">
+                                      <span className="font-medium">
+                                        Total Ordered:
+                                      </span>{" "}
+                                      {clientTotal} units
+                                    </div>
+                                  </>
+                                )}
                               </div>
+                              {clientProduct &&
+                                clientAvailable < productQuantities[item.id] &&
+                                productQuantities[item.id] > 0 && (
+                                  <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded flex items-start">
+                                    <AlertCircle className="h-4 w-4 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+                                    <p className="text-sm text-red-700">
+                                      Warning: Selected quantity (
+                                      {productQuantities[item.id]}) exceeds
+                                      client available quantity (
+                                      {clientAvailable})
+                                    </p>
+                                  </div>
+                                )}
                             </div>
 
                             <QuantitySelector
@@ -491,6 +657,19 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
               ))}
             </select>
           </div>
+
+          {/* Finished Products Table */}
+          {selectedBindingAdvice && lineItems.length > 0 && (
+            <FinishedProductsTable
+              lineItems={lineItems}
+              finishedProducts={finishedProducts}
+              getMatchedProduct={getFinishedProduct}
+              title="Job Card - Finished Products Allocation"
+              subtitle="Products that will be allocated for this job card"
+              variant="matching"
+              showPricing={true}
+            />
+          )}
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">

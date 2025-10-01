@@ -100,6 +100,55 @@ const Dispatch = () => {
     setViewingChallan(dispatch);
   };
 
+  // Update inventory when products are delivered
+  const updateInventoryOnDelivery = async (dispatch: any) => {
+    try {
+      // Find inventory item for this product
+      const inventoryResponse = await fetch(
+        `http://localhost:3002/inventory?itemName=${encodeURIComponent(
+          dispatch.notebookSize
+        )}`
+      );
+      const inventoryItems = await inventoryResponse.json();
+
+      if (inventoryItems.length > 0) {
+        const item = inventoryItems[0];
+        const newStock = Math.max(0, item.currentStock - dispatch.quantity);
+        const newAvailable = Math.max(
+          0,
+          (item.availableQuantity || 0) - dispatch.quantity
+        );
+
+        await fetch(`http://localhost:3002/inventory/${item.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            currentStock: newStock,
+            availableQuantity: newAvailable,
+            updatedAt: new Date().toISOString(),
+            // Add delivery history
+            deliveryHistory: [
+              ...(item.deliveryHistory || []),
+              {
+                date: new Date().toISOString(),
+                quantity: dispatch.quantity,
+                dispatchId: dispatch.id,
+                clientName: dispatch.clientName,
+                type: "delivery",
+              },
+            ],
+          }),
+        });
+
+        console.log(
+          `Inventory updated: -${dispatch.quantity} ${dispatch.notebookSize} (delivered)`
+        );
+      }
+    } catch (error) {
+      console.error("Failed to update inventory on delivery:", error);
+    }
+  };
+
   const handleUpdateLocationStatus = (
     dispatchId: string,
     locationId: string,
@@ -120,6 +169,8 @@ const Dispatch = () => {
       );
 
       let overallStatus = dispatch.status;
+      const wasNotDelivered = dispatch.status !== "delivered";
+
       if (allDelivered) {
         overallStatus = "delivered";
       } else if (anyInTransit) {
@@ -133,6 +184,11 @@ const Dispatch = () => {
           ? new Date().toISOString().split("T")[0]
           : null,
       });
+
+      // Update inventory when dispatch is fully delivered
+      if (allDelivered && wasNotDelivered) {
+        updateInventoryOnDelivery(dispatch);
+      }
     }
   };
 
