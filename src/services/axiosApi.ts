@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 
 // API Configuration
-const API_BASE_URL = "http://localhost:3002";
+const API_BASE_URL = import.meta.env.BASE_URL;
 
 // Create axios instance with default configuration
 const axiosInstance: AxiosInstance = axios.create({
