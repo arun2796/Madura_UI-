@@ -105,9 +105,8 @@ const Dispatch = () => {
     try {
       // Find inventory item for this product
       const inventoryResponse = await fetch(
-        `http://localhost:3002/inventory?itemName=${encodeURIComponent(
-          dispatch.notebookSize
-        )}`
+        import.meta.env.BASE_URL +
+          `/inventory?itemName=${encodeURIComponent(dispatch.notebookSize)}`
       );
       const inventoryItems = await inventoryResponse.json();
 
@@ -119,7 +118,7 @@ const Dispatch = () => {
           (item.availableQuantity || 0) - dispatch.quantity
         );
 
-        await fetch(`http://localhost:3002/inventory/${item.id}`, {
+        await fetch( import.meta.env.BASE_URL + `/inventory/${item.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

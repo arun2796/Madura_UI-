@@ -342,7 +342,7 @@ const JobCardForm: React.FC<JobCardFormProps> = ({
             // Update binding advice with new availability
             try {
               await fetch(
-                `http://localhost:3002/bindingAdvices/${selectedBindingAdvice.id}`,
+                `${import.meta.env.BASE_URL}/bindingAdvices/${selectedBindingAdvice.id}`,
                 {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },

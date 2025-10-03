@@ -1,7 +1,7 @@
 // Test script to generate invoice from job card
 // This script demonstrates the complete invoice generation process
 
-const API_BASE = 'http://localhost:3002';
+const API_BASE = import.meta.env.BASE_URL ;
 
 // Test data from the database
 const testJobCard = {

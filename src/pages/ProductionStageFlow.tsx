@@ -318,16 +318,14 @@ const ProductionStageFlow: React.FC = () => {
     try {
       // Find inventory item for this product
       const inventoryResponse = await fetch(
-        `http://localhost:3002/inventory?itemName=${encodeURIComponent(
-          batch.productName
-        )}`
+        import.meta.env.BASE_URL +
+          `/inventory?itemName=${encodeURIComponent(batch.productName)}`
       );
       const inventoryItems = await inventoryResponse.json();
-
       if (inventoryItems.length > 0) {
         // Update existing inventory item
         const item = inventoryItems[0];
-        await fetch(`http://localhost:3002/inventory/${item.id}`, {
+        await fetch(`${import.meta.env.BASE_URL}/inventory/${item.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -338,7 +336,7 @@ const ProductionStageFlow: React.FC = () => {
         });
       } else {
         // Create new inventory item
-        await fetch("http://localhost:3002/inventory", {
+        await fetch(import.meta.env.BASE_URL + `/inventory`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
