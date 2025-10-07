@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import {
-  Plus,
   Search,
-  Filter,
   Edit,
   Trash2,
   UserPlus,
@@ -15,7 +13,7 @@ import { useSystemData } from "../../hooks/useSystemData";
 const UserManagement = () => {
   const {
     users,
-    roles,
+
     loading,
     error,
     addUser,
@@ -48,9 +46,9 @@ const UserManagement = () => {
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchTerm.toLowerCase());
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    // user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    // user.lastName.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
     const matchesStatus =
